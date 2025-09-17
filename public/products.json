@@ -1,0 +1,22 @@
+[
+  {
+    "id": "example-1",
+    "name": "Your Product Name",
+    "price": 12.99,
+    "originalPrice": 15.99,
+    "image": "https://images.pexels.com/photos/your-image.jpg",
+    "category": "condiments-seasonings",
+    "rating": 4.5,
+    "reviews": 123,
+    "description": "Your product description here",
+    "inStock": true,
+    "isNew": true,
+    "isOnSale": true,
+    "nutritionInfo": {
+      "calories": 100,
+      "protein": "5g",
+      "carbs": "20g",
+      "fat": "2g"
+    }
+  }
+]
