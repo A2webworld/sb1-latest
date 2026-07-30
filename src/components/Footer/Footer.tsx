@@ -10,10 +10,10 @@ export default function Footer() {
           {/* Company Info */}
           <div>
             <h3 className="text-xl font-bold text-emerald-400 mb-4">
-              AlMUJIB SUPERMARKET
+              Afonja Afro Foods
             </h3>
             <p className="text-gray-300 mb-4">
-              Your trusted grocery partner, delivering fresh quality products to your doorstep since 2020.
+              Your trusted African supermarket in the UK, delivering quality African food products to your doorstep since 2020.
             </p>
             <div className="flex space-x-4">
               <Facebook className="h-5 w-5 text-gray-400 hover:text-emerald-400 cursor-pointer transition-colors" />
@@ -63,7 +63,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="h-5 w-5 text-emerald-400" />
-                <span className="text-gray-300">info@almujib.co.uk</span>
+                <span className="text-gray-300">info@afonjaafrofoods.co.uk</span>
               </div>
             </div>
 
@@ -86,7 +86,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <p className="text-gray-400">
-            © 2024 AlMUJIB SUPERMARKET. All rights reserved.
+            © 2026 Afonja Afro Foods. All rights reserved.
           </p>
         </div>
       </div>

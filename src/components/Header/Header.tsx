@@ -39,7 +39,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             <span>Free delivery on orders over £50!</span>
             <div className="flex items-center space-x-4">
               <span>📞 +447440251589</span>
-              <span>📧 info@almujib.co.uk</span>
+              <span>📧 info@afonjaafrofoods.co.uk</span>
             </div>
           </div>
         </div>
@@ -51,7 +51,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
           {/* Logo */}
           <div className="flex-shrink-0 cursor-pointer" onClick={() => onPageChange('home')}>
             <h1 className="text-2xl font-bold text-emerald-600">
-              AlMUJIB <span className="text-orange-500">SUPERMARKET</span>
+                Afonja <span className="text-orange-500">Afro Foods</span>
             </h1>
           </div>
 
