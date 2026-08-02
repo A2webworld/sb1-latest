@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
+import AuthModal from '../Auth/AuthModal';
 
 interface CartDropdownProps {
   onClose: () => void;
+  onOpenCheckout: () => void;
 }
 
-export default function CartDropdown({ onClose }: CartDropdownProps) {
+export default function CartDropdown({ onClose, onOpenCheckout }: CartDropdownProps) {
   const { items, total, updateQuantity, removeItem } = useCart();
+  const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   if (items.length === 0) {
     return (
@@ -28,62 +33,103 @@ export default function CartDropdown({ onClose }: CartDropdownProps) {
     );
   }
 
+  const handleCheckout = () => {
+    console.log('🚀 handleCheckout clicked');
+    console.log('👤 Current user:', user);
+    
+    if (user) {
+      console.log('✅ User logged in - opening checkout via parent');
+      onOpenCheckout();
+      onClose();
+    } else {
+      console.log('❌ User NOT logged in - showing auth modal');
+      setShowAuthModal(true);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    console.log('✅ Auth success - opening checkout');
+    setShowAuthModal(false);
+    onOpenCheckout();
+    onClose();
+  };
+
   return (
-    <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50">
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Shopping Cart</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="max-h-64 overflow-y-auto">
-          {items.map((item) => (
-            <div key={item.id} className="flex items-center space-x-3 py-3 border-b">
-              <img
-                src={item.image}
-                alt={item.name}
-                className="h-12 w-12 object-cover rounded"
-              />
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-gray-900">{item.name}</h4>
-                <p className="text-sm text-gray-500">£{item.price.toFixed(2)}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="text-sm font-medium">{item.quantity}</span>
-                <button
-                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="text-red-400 hover:text-red-600 ml-2"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-4 pt-4 border-t">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-lg font-semibold">Total: £{total.toFixed(2)}</span>
+    <>
+      <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border z-50">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Shopping Cart</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X className="h-5 w-5" />
+            </button>
           </div>
-          <button className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors">
-            Checkout
-          </button>
+
+          <div className="max-h-64 overflow-y-auto">
+            {items.map((item) => (
+              <div key={item.id} className="flex items-center space-x-3 py-3 border-b">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="h-12 w-12 object-cover rounded"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48x48?text=Product';
+                  }}
+                />
+                <div className="flex-1">
+                  <h4 className="text-sm font-medium text-gray-900 line-clamp-1">{item.name}</h4>
+                  <p className="text-sm text-gray-500">£{item.price.toFixed(2)}</p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="text-sm font-medium">{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => removeItem(item.id)}
+                    className="text-red-400 hover:text-red-600 ml-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 pt-4 border-t">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-semibold">Total: £{total.toFixed(2)}</span>
+            </div>
+            <button
+              onClick={handleCheckout}
+              className="w-full bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors"
+            >
+              Proceed to Checkout
+            </button>
+            {!user && (
+              <p className="text-xs text-gray-500 text-center mt-2">
+                Sign in to complete your order
+              </p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Auth Modal - Login/Signup */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
+    </>
   );
 }

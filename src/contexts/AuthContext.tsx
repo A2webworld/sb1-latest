@@ -15,19 +15,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setUser({
-      id: '1',
-      name: 'John Doe',
-      email: email,
-      avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100'
-    });
-    setIsLoading(false);
-  };
+const login = async (email: string, password: string) => {
+  console.log('🔐 Logging in...', email);
+  setIsLoading(true);
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  setUser({
+    id: '1',
+    name: 'John Doe',
+    email: email,
+    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100'
+  });
+  console.log('✅ User set:', { id: '1', name: 'John Doe', email: email });
+  setIsLoading(false);
+};
 
   const register = async (name: string, email: string, password: string) => {
     setIsLoading(true);

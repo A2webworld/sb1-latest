@@ -8,20 +8,28 @@ import { X, ShoppingBag } from 'lucide-react';
 // Load Stripe with publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_xxxxxxxxxxxxx');
 
+console.log('💳 Stripe Promise initialized:', stripePromise);
+
 interface CheckoutFormProps {
   onClose: () => void;
   onSuccess: () => void;
 }
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
+  console.log('💳 CheckoutForm rendered');
   const stripe = useStripe();
   const elements = useElements();
+  console.log('💳 stripe:', stripe);
+  console.log('💳 elements:', elements);
+  
   const { cart, totalPrice, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
+
+  const safeTotal = totalPrice || 0;
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -42,25 +50,24 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
     }
 
     try {
-      // Create payment intent
-      const response = await fetch('/.netlify/functions/create-payment-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: Math.round(totalPrice * 100),
-          currency: 'gbp',
-          customerName,
-          customerEmail,
-          customerAddress,
-          items: cart.map(item => ({
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-          })),
-        }),
-      });
+const response = await fetch('/.netlify/functions/create-payment-intent', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    amount: Math.round(safeTotal * 100),
+    currency: 'gbp',
+    customerName,
+    customerEmail,
+    customerAddress,
+    items: (cart || []).map(item => ({
+      name: item.name || 'Product',
+      price: item.price || 0,
+      quantity: item.quantity || 1,
+    })),
+  }),
+});
 
       const data = await response.json();
       
@@ -70,7 +77,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
 
       const { clientSecret } = data;
 
-      // Confirm payment
       const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
           card: cardElement,
@@ -183,7 +189,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
           <div className="border-t pt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Subtotal</span>
-              <span>£{totalPrice.toFixed(2)}</span>
+              <span>£{safeTotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Delivery</span>
@@ -191,7 +197,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
             </div>
             <div className="flex justify-between text-lg font-bold pt-2 border-t">
               <span>Total</span>
-              <span className="text-emerald-600">£{totalPrice.toFixed(2)}</span>
+              <span className="text-emerald-600">£{safeTotal.toFixed(2)}</span>
             </div>
           </div>
 
@@ -209,7 +215,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
                 Processing...
               </span>
             ) : (
-              `Pay £${totalPrice.toFixed(2)}`
+              `Pay £${safeTotal.toFixed(2)}`
             )}
           </button>
 
@@ -228,8 +234,15 @@ const Checkout: React.FC<{ isOpen: boolean; onClose: () => void; onSuccess: () =
   onClose, 
   onSuccess 
 }) => {
-  if (!isOpen) return null;
-
+  console.log('💳 Checkout component rendered');
+  console.log('💳 isOpen:', isOpen);
+  
+  if (!isOpen) {
+    console.log('💳 Checkout is closed');
+    return null;
+  }
+  
+  console.log('💳 Checkout is OPEN!');
   return (
     <Elements stripe={stripePromise}>
       <CheckoutForm onClose={onClose} onSuccess={onSuccess} />
@@ -238,4 +251,3 @@ const Checkout: React.FC<{ isOpen: boolean; onClose: () => void; onSuccess: () =
 };
 
 export default Checkout;
-

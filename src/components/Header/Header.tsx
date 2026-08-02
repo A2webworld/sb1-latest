@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { categories } from '../../data/categories';
 import CartDropdown from './CartDropdown';
 import SearchDropdown from './SearchDropdown';
+import Checkout from '../../pages/Checkout/Checkout';
 
 interface HeaderProps {
   currentPage: string;
@@ -17,6 +18,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCheckout, setShowCheckout] = useState(false);
   
   const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
@@ -51,7 +53,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
           {/* Logo */}
           <div className="flex-shrink-0 cursor-pointer" onClick={() => onPageChange('home')}>
             <h1 className="text-2xl font-bold text-emerald-600">
-                Afonja <span className="text-orange-500">Afro Foods</span>
+              Afonja <span className="text-orange-500">Afro Foods</span>
             </h1>
           </div>
 
@@ -112,7 +114,12 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
                   </span>
                 )}
               </button>
-              {isCartOpen && <CartDropdown onClose={() => setIsCartOpen(false)} />}
+              {isCartOpen && (
+                <CartDropdown 
+                  onClose={() => setIsCartOpen(false)} 
+                  onOpenCheckout={() => setShowCheckout(true)}
+                />
+              )}
             </div>
 
             {/* User Account */}
@@ -258,6 +265,16 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
           </div>
         </div>
       )}
+
+      {/* Checkout Modal */}
+      <Checkout
+        isOpen={showCheckout}
+        onClose={() => setShowCheckout(false)}
+        onSuccess={() => {
+          console.log('🎉 Checkout success!');
+          setShowCheckout(false);
+        }}
+      />
     </header>
   );
 }
