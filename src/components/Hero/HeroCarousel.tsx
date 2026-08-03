@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
 
+interface HeroCarouselProps {
+  onPageChange?: (page: string) => void;
+}
+
 const slides = [
   {
     id: 1,
@@ -28,7 +32,7 @@ const slides = [
   }
 ];
 
-export default function HeroCarousel() {
+export default function HeroCarousel({ onPageChange }: HeroCarouselProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -47,8 +51,16 @@ export default function HeroCarousel() {
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
+  const handleCtaClick = () => {
+    if (onPageChange) {
+      onPageChange('shop');
+    } else {
+      window.location.href = '/shop';
+    }
+  };
+
   return (
-    <div className="relative h-96 md:h-[500px] overflow-hidden rounded-lg">
+    <div className="relative h-[300px] sm:h-[400px] md:h-[500px] overflow-hidden rounded-lg">
       {slides.map((slide, index) => (
         <div
           key={slide.id}
@@ -67,17 +79,20 @@ export default function HeroCarousel() {
             
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center text-white max-w-2xl px-4">
-                <div className="inline-block bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-medium mb-4">
+                <div className="inline-block bg-orange-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-sm font-medium mb-2 sm:mb-4">
                   {slide.discount}
                 </div>
-                <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+                <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2 sm:mb-4 leading-tight">
                   {slide.title}
                 </h1>
-                <p className="text-xl md:text-2xl mb-8 text-gray-200">
+                <p className="text-sm sm:text-xl md:text-2xl mb-4 sm:mb-8 text-gray-200">
                   {slide.subtitle}
                 </p>
-                <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-colors duration-300 flex items-center space-x-2 mx-auto">
-                  <ShoppingBag className="h-5 w-5" />
+                <button 
+                  onClick={handleCtaClick}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold text-sm sm:text-lg transition-colors duration-300 flex items-center space-x-2 mx-auto"
+                >
+                  <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>{slide.cta}</span>
                 </button>
               </div>
@@ -89,24 +104,24 @@ export default function HeroCarousel() {
       {/* Navigation Buttons */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all duration-300"
+        className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-1 sm:p-2 rounded-full transition-all duration-300"
       >
-        <ChevronLeft className="h-6 w-6" />
+        <ChevronLeft className="h-4 w-4 sm:h-6 sm:w-6" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-2 rounded-full transition-all duration-300"
+        className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white p-1 sm:p-2 rounded-full transition-all duration-300"
       >
-        <ChevronRight className="h-6 w-6" />
+        <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6" />
       </button>
 
       {/* Dots Indicator */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <div className="absolute bottom-2 sm:bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-1 sm:space-x-2">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
               index === currentSlide ? 'bg-white' : 'bg-white bg-opacity-50'
             }`}
           />

@@ -22,14 +22,19 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
   console.log('💳 stripe:', stripe);
   console.log('💳 elements:', elements);
   
-  const { cart, totalPrice, clearCart } = useCart();
+  const { cart, total, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
 
-  const safeTotal = totalPrice || 0;
+  // Use total from context, fallback to manual calculation
+  const safeTotal = total || cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
+
+  console.log('🛒 Cart:', cart);
+  console.log('💰 Total from context:', total);
+  console.log('💰 Safe total:', safeTotal);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -50,24 +55,24 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
     }
 
     try {
-const response = await fetch('/.netlify/functions/create-payment-intent', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    amount: Math.round(safeTotal * 100),
-    currency: 'gbp',
-    customerName,
-    customerEmail,
-    customerAddress,
-    items: (cart || []).map(item => ({
-      name: item.name || 'Product',
-      price: item.price || 0,
-      quantity: item.quantity || 1,
-    })),
-  }),
-});
+      const response = await fetch('/.netlify/functions/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: Math.round(safeTotal * 100),
+          currency: 'gbp',
+          customerName,
+          customerEmail,
+          customerAddress,
+          items: (cart || []).map(item => ({
+            name: item.name || 'Product',
+            price: item.price || 0,
+            quantity: item.quantity || 1,
+          })),
+        }),
+      });
 
       const data = await response.json();
       
