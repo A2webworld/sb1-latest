@@ -33,7 +33,7 @@ function App() {
             <main>
               {renderPage()}
             </main>
-            <Footer />
+            <Footer onPageChange={setCurrentPage} />
           </div>
         </WishlistProvider>
       </CartProvider>

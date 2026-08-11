@@ -2,7 +2,19 @@ import React from 'react';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 import { categories } from '../../data/categories';
 
-export default function Footer() {
+interface FooterProps {
+  onPageChange?: (page: string) => void;
+}
+
+export default function Footer({ onPageChange }: FooterProps) {
+  const handleNavigation = (page: string) => {
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      window.location.href = `/${page}`;
+    }
+  };
+
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -27,11 +39,46 @@ export default function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-emerald-400 transition-colors">About Us</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-emerald-400 transition-colors">Delivery Info</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-emerald-400 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-emerald-400 transition-colors">Terms & Conditions</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-emerald-400 transition-colors">Return Policy</a></li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('about')} 
+                  className="text-gray-300 hover:text-emerald-400 transition-colors"
+                >
+                  About Us
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('delivery')} 
+                  className="text-gray-300 hover:text-emerald-400 transition-colors"
+                >
+                  Delivery Info
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('privacy')} 
+                  className="text-gray-300 hover:text-emerald-400 transition-colors"
+                >
+                  Privacy Policy
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('terms')} 
+                  className="text-gray-300 hover:text-emerald-400 transition-colors"
+                >
+                  Terms & Conditions
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => handleNavigation('return')} 
+                  className="text-gray-300 hover:text-emerald-400 transition-colors"
+                >
+                  Return Policy
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -41,9 +88,12 @@ export default function Footer() {
             <ul className="space-y-2">
               {categories.slice(0, 6).map((category) => (
                 <li key={category.id}>
-                  <a href="#" className="text-gray-300 hover:text-emerald-400 transition-colors">
+                  <button 
+                    onClick={() => handleNavigation('shop')} 
+                    className="text-gray-300 hover:text-emerald-400 transition-colors"
+                  >
                     {category.name}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>
