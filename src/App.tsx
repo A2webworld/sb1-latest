@@ -16,10 +16,15 @@ import { AuthProvider } from './contexts/AuthContext';
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
 
+  const handlePageChange = (page: string) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
-        return <Home onPageChange={setCurrentPage} />;
+        return <Home onPageChange={handlePageChange} />;
       case 'shop':
         return <Shop />;
       case 'contact':
@@ -35,7 +40,7 @@ function App() {
       case 'return':
         return <ReturnPolicy />;
       default:
-        return <Home onPageChange={setCurrentPage} />;
+        return <Home onPageChange={handlePageChange} />;
     }
   };
 
@@ -44,11 +49,11 @@ function App() {
       <CartProvider>
         <WishlistProvider>
           <div className="min-h-screen bg-gray-50">
-            <Header currentPage={currentPage} onPageChange={setCurrentPage} />
+            <Header currentPage={currentPage} onPageChange={handlePageChange} />
             <main>
               {renderPage()}
             </main>
-            <Footer onPageChange={setCurrentPage} />
+            <Footer onPageChange={handlePageChange} />
           </div>
         </WishlistProvider>
       </CartProvider>
