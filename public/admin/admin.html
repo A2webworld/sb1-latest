@@ -715,26 +715,55 @@ async function saveToServer(products) {
         }
     });
 
-    function saveAndAddProduct(products, newProduct) {
-        products.unshift(newProduct);
-        saveProducts(products);
-        
-        document.getElementById('productForm').reset();
-        document.getElementById('imagePreview').style.display = 'none';
-        showMessage('✅ Product added successfully!', 'success');
-        loadProducts();
-        showTab('list');
-    }
+    // ============= SAVE & ADD PRODUCT =============
+function saveAndAddProduct(products, newProduct) {
+    products.unshift(newProduct);
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+    allProducts = products;
+    filteredProducts = [...products];
+    updateProductCount();
+    document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
+    renderProductList(filteredProducts);
+    showMessage('✅ Product added successfully!', 'success');
+    document.getElementById('productForm').reset();
+    document.getElementById('imagePreview').style.display = 'none';
+    showTab('list');
+    saveToServer(products);
+}
 
-    // Delete Product
-    function deleteProduct(index) {
-        if (!confirm('Are you sure you want to delete this product?')) return;
-        
-        const products = allProducts.filter((_, i) => i !== index);
-        saveProducts(products);
-        loadProducts();
-        showMessage('🗑️ Product deleted!', 'success');
-    }
+// ============= SAVE UPDATE =============
+function saveUpdate(index, products, updatedProduct) {
+    products[index] = updatedProduct;
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+    allProducts = products;
+    filteredProducts = [...products];
+    updateProductCount();
+    document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
+    renderProductList(filteredProducts);
+    showMessage('✅ Product updated successfully!', 'success');
+    document.getElementById('productForm').reset();
+    document.getElementById('imagePreview').style.display = 'none';
+    const submitBtn = document.querySelector('#productForm button[type="submit"]');
+    submitBtn.textContent = '➕ Add Product';
+    submitBtn.className = 'btn btn-success';
+    document.getElementById('productForm').onsubmit = null;
+    showTab('list');
+    saveToServer(products);
+}
+
+// ============= DELETE PRODUCT =============
+function deleteProduct(index) {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    const products = allProducts.filter((_, i) => i !== index);
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+    allProducts = products;
+    filteredProducts = [...products];
+    updateProductCount();
+    document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
+    renderProductList(filteredProducts);
+    showMessage('🗑️ Product deleted!', 'success');
+    saveToServer(products);
+}
 
     // Edit Product
     function editProduct(index) {
@@ -909,7 +938,7 @@ async function saveToServer(products) {
     console.log('🛒 Afonja Afro Foods Admin Panel loaded!');
     console.log('📧 Login: admin@afonjaafrofoods.co.uk');
     console.log('🔑 Password: admin123');
-    
+
     // Add a manual sync button to force save
 document.addEventListener('DOMContentLoaded', function() {
     // Add a sync button in the header
