@@ -548,28 +548,34 @@ async function saveToServer(products) {
     list.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Loading products...</p></div>`;
 
     try {
-        // Load from Supabase via Netlify function
-        const response = await fetch('/.netlify/functions/get-products');
-        if (response.ok) {
-            const products = await response.json();
-            console.log(`✅ Loaded ${products.length} products from database`);
-            localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
-            allProducts = products;
-            filteredProducts = [...products];
-            updateProductCount();
-            document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
-            renderProductList(allProducts);
-            return;
-        }
+        let products = [];
         
-        // Fallback: Try localStorage
+        // FIRST: Try to load from localStorage (where your edits are saved)
         let localProducts = getProducts();
-        if (localProducts.length > 0) {
+        
+        if (localProducts && localProducts.length > 0) {
             products = localProducts;
             console.log(`✅ Loaded ${products.length} products from localStorage`);
         } else {
-            products = getSampleProducts();
-            saveProducts(products);
+            // SECOND: Load from products.json
+            try {
+                const response = await fetch('/products.json');
+                if (response.ok) {
+                    products = await response.json();
+                    console.log(`✅ Loaded ${products.length} products from products.json`);
+                    // Save to localStorage for future use
+                    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+                } else {
+                    // THIRD: Use sample data
+                    products = getSampleProducts();
+                    saveProducts(products);
+                    console.log(`✅ Using ${products.length} sample products`);
+                }
+            } catch (e) {
+                console.warn('Error loading products.json:', e);
+                products = getSampleProducts();
+                saveProducts(products);
+            }
         }
         
         allProducts = products;
