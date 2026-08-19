@@ -511,11 +511,32 @@
     }
 
     function saveProducts(products) {
-        localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
-        allProducts = products;
-        filteredProducts = [...products];
-        updateProductCount();
+    // Save to localStorage
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+    allProducts = products;
+    filteredProducts = [...products];
+    updateProductCount();
+    
+    // Also save to server via fetch
+    saveToServer(products);
+}
+
+async function saveToServer(products) {
+    try {
+        const response = await fetch('/.netlify/functions/save-products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ products })
+        });
+        if (response.ok) {
+            console.log('✅ Products saved to server successfully');
+        } else {
+            console.warn('⚠️ Server save failed, but products saved locally');
+        }
+    } catch (error) {
+        console.warn('⚠️ Server save error, but products saved locally:', error);
     }
+}
 
     async function loadProducts() {
         const list = document.getElementById('productList');
@@ -889,5 +910,26 @@
     console.log('📧 Login: admin@afonjaafrofoods.co.uk');
     console.log('🔑 Password: admin123');
 </script>
+// Add a manual sync button to force save
+document.addEventListener('DOMContentLoaded', function() {
+    // Add a sync button in the header
+    const header = document.querySelector('.admin-header');
+    if (header) {
+        const syncBtn = document.createElement('button');
+        syncBtn.className = 'logout-btn';
+        syncBtn.style.background = '#059669';
+        syncBtn.textContent = '🔄 Sync to Server';
+        syncBtn.onclick = function() {
+            if (confirm('Sync all products to server?')) {
+                saveToServer(allProducts);
+                showMessage('🔄 Syncing products to server...', 'success');
+                setTimeout(() => {
+                    showMessage('✅ Products synced successfully!', 'success');
+                }, 2000);
+            }
+        };
+        header.querySelector('div').appendChild(syncBtn);
+    }
+});
 </body>
 </html>
