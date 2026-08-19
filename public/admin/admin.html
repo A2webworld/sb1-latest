@@ -737,6 +737,8 @@ function saveUpdate(index, products, updatedProduct) {
     document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
     renderProductList(filteredProducts);
     showMessage('✅ Product updated successfully!', 'success');
+    
+    // Reset the form back to "Add" mode
     document.getElementById('productForm').reset();
     document.getElementById('imagePreview').style.display = 'none';
     const submitBtn = document.querySelector('#productForm button[type="submit"]');
@@ -744,6 +746,7 @@ function saveUpdate(index, products, updatedProduct) {
     submitBtn.className = 'btn btn-success';
     document.getElementById('productForm').onsubmit = null;
     window.editingIndex = undefined;
+    
     showTab('list');
     saveToServer(products);
 }
@@ -770,9 +773,10 @@ function deleteProduct(index) {
         return;
     }
     
-    // Store the index in a global variable
+    // Store the index being edited
     window.editingIndex = index;
     
+    // Fill the form with product data
     document.getElementById('productName').value = product.name || '';
     document.getElementById('productPrice').value = product.price || '';
     document.getElementById('productCategory').value = product.category || 'cooking-oils';
@@ -790,28 +794,36 @@ function deleteProduct(index) {
         document.getElementById('imagePreview').style.display = 'none';
     }
 
-    const form = document.getElementById('productForm');
-    const submitBtn = form.querySelector('button[type="submit"]');
+    // Change button to "Update Product"
+    const submitBtn = document.querySelector('#productForm button[type="submit"]');
     submitBtn.textContent = '✏️ Update Product';
     submitBtn.className = 'btn btn-warning';
 
-    // Remove any existing submit listeners and add a new one
+    // Set form submit to UPDATE mode
+    const form = document.getElementById('productForm');
     form.onsubmit = function(e) {
         e.preventDefault();
         const editIndex = window.editingIndex;
-        if (editIndex !== undefined) {
+        if (editIndex !== undefined && editIndex !== null) {
             updateProduct(editIndex);
         } else {
             showMessage('❌ Error: No product selected for editing', 'error');
         }
     };
 
+    // Switch to Add tab (which now shows edit form)
     showTab('add');
     document.querySelector('.admin-tabs button:first-child').click();
     document.getElementById('tab-add').scrollIntoView({ behavior: 'smooth' });
 }
 
     function updateProduct(index) {
+    // Make sure we have a valid index
+    if (index === undefined || index === null) {
+        showMessage('❌ Error: Invalid product index', 'error');
+        return;
+    }
+    
     const products = [...allProducts];
     const name = document.getElementById('productName').value.trim();
     const price = parseFloat(document.getElementById('productPrice').value);
@@ -825,6 +837,12 @@ function deleteProduct(index) {
 
     if (!name || !price) {
         showMessage('Please fill in name and price!', 'error');
+        return;
+    }
+
+    // Make sure the product exists at this index
+    if (index >= products.length) {
+        showMessage('❌ Error: Product not found', 'error');
         return;
     }
 
