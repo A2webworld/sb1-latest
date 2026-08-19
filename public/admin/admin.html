@@ -529,74 +529,62 @@ async function saveToServer(products) {
             body: JSON.stringify({ products })
         });
         if (response.ok) {
-            console.log('✅ Products saved to server successfully');
+            const data = await response.json();
+            console.log('✅ Products saved to database:', data);
+            showMessage(`✅ ${data.count} products synced to database!`, 'success');
         } else {
-            console.warn('⚠️ Server save failed, but products saved locally');
+            const error = await response.text();
+            console.warn('⚠️ Server save failed:', error);
+            showMessage('⚠️ Server sync failed, but saved locally', 'error');
         }
     } catch (error) {
-        console.warn('⚠️ Server save error, but products saved locally:', error);
+        console.warn('⚠️ Server save error:', error);
+        showMessage('⚠️ Server sync failed, but saved locally', 'error');
     }
 }
 
     async function loadProducts() {
-        const list = document.getElementById('productList');
-        list.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Loading products...</p></div>`;
+    const list = document.getElementById('productList');
+    list.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Loading products...</p></div>`;
 
-        try {
-            let products = [];
-            
-            // Determine the base URL
-            const baseUrl = window.location.origin;
-            const productsUrl = `${baseUrl}/products.json`;
-            
-            console.log(`📡 Fetching products from: ${productsUrl}`);
-            
-            // Load from public/products.json
-            try {
-                const response = await fetch(productsUrl);
-                if (response.ok) {
-                    products = await response.json();
-                    console.log(`✅ Loaded ${products.length} products from products.json`);
-                    // Save to localStorage as backup
-                    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
-                    allProducts = products;
-                    filteredProducts = [...products];
-                    updateProductCount();
-                    document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
-                    renderProductList(allProducts);
-                    return;
-                } else {
-                    console.warn('products.json not found, checking localStorage...');
-                }
-            } catch (e) {
-                console.warn('Error loading products.json:', e);
-            }
-            
-            // Fallback: Try localStorage
-            let localProducts = getProducts();
-            if (localProducts.length > 0) {
-                products = localProducts;
-                console.log(`✅ Loaded ${products.length} products from localStorage`);
-            } else {
-                // Final fallback: sample data
-                products = getSampleProducts();
-                saveProducts(products);
-                console.log(`✅ Using ${products.length} sample products`);
-            }
-            
+    try {
+        // Load from Supabase via Netlify function
+        const response = await fetch('/.netlify/functions/get-products');
+        if (response.ok) {
+            const products = await response.json();
+            console.log(`✅ Loaded ${products.length} products from database`);
+            localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
             allProducts = products;
             filteredProducts = [...products];
             updateProductCount();
             document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
             renderProductList(allProducts);
-            
-        } catch (error) {
-            console.error('Error loading products:', error);
-            const products = getSampleProducts();
-            saveProducts(products);
-            renderProductList(products);
+            return;
         }
+        
+        // Fallback: Try localStorage
+        let localProducts = getProducts();
+        if (localProducts.length > 0) {
+            products = localProducts;
+            console.log(`✅ Loaded ${products.length} products from localStorage`);
+        } else {
+            products = getSampleProducts();
+            saveProducts(products);
+        }
+        
+        allProducts = products;
+        filteredProducts = [...products];
+        updateProductCount();
+        document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
+        renderProductList(allProducts);
+        
+    } catch (error) {
+        console.error('Error loading products:', error);
+        const products = getSampleProducts();
+        saveProducts(products);
+        renderProductList(products);
     }
+}
 
     function updateProductCount() {
         const count = document.getElementById('productCount');
