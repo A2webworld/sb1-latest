@@ -5,7 +5,7 @@ import { useProducts } from '../../hooks/useProducts';
 import { categories } from '../../data/categories';
 
 export default function Shop() {
-  const { products, loading, error } = useProducts(true, '/products.json');
+  const { products, loading, error } = useProducts();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [priceRange, setPriceRange] = useState([0, 100]);

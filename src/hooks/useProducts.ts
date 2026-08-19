@@ -1,39 +1,71 @@
 import { useState, useEffect } from 'react';
 import { Product } from '../types';
-import { products as defaultProducts } from '../data/products';
-import { loadProductsFromJSON, validateProduct } from '../utils/productLoader';
 
-export const useProducts = (loadFromJSON: boolean = false, jsonPath?: string) => {
-  const [products, setProducts] = useState<Product[]>(defaultProducts);
-  const [loading, setLoading] = useState(false);
+interface UseProductsResult {
+  products: Product[];
+  loading: boolean;
+  error: string | null;
+  addProduct: (product: Product) => void;
+  updateProduct: (id: string, updates: Partial<Product>) => void;
+  removeProduct: (id: string) => void;
+  reloadProducts: () => Promise<void>;
+}
+
+export const useProducts = (): UseProductsResult => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (loadFromJSON && jsonPath) {
-      loadProducts();
-    }
-  }, [loadFromJSON, jsonPath]);
 
   const loadProducts = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const loadedProducts = await loadProductsFromJSON(jsonPath!);
-      const validProducts = loadedProducts.filter(validateProduct);
+      // Load from Supabase via Netlify function
+      const response = await fetch('/.netlify/functions/get-products');
       
-      if (validProducts.length !== loadedProducts.length) {
-        console.warn(`${loadedProducts.length - validProducts.length} invalid products were filtered out`);
+      if (response.ok) {
+        const data = await response.json();
+        setProducts(data);
+        console.log(`✅ Loaded ${data.length} products from Supabase`);
+      } else {
+        // Fallback: Try loading from products.json
+        console.warn('Failed to load from Supabase, trying products.json...');
+        const fallbackResponse = await fetch('/products.json');
+        if (fallbackResponse.ok) {
+          const data = await fallbackResponse.json();
+          setProducts(data);
+          console.log(`✅ Loaded ${data.length} products from products.json (fallback)`);
+        } else {
+          setProducts([]);
+          setError('Failed to load products');
+        }
       }
-      
-      setProducts(validProducts);
     } catch (err) {
-      setError('Failed to load products');
       console.error('Error loading products:', err);
+      // Fallback: Try products.json
+      try {
+        const fallbackResponse = await fetch('/products.json');
+        if (fallbackResponse.ok) {
+          const data = await fallbackResponse.json();
+          setProducts(data);
+          console.log(`✅ Loaded ${data.length} products from products.json (fallback)`);
+        } else {
+          setProducts([]);
+          setError('Failed to load products');
+        }
+      } catch (fallbackErr) {
+        setProducts([]);
+        setError('Failed to load products');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
   const addProduct = (product: Product) => {
     setProducts(prev => [...prev, product]);

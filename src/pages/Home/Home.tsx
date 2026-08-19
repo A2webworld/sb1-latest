@@ -11,7 +11,7 @@ interface HomeProps {
 }
 
 export default function Home({ onPageChange }: HomeProps) {
-  const { products } = useProducts(true, '/products.json');
+  const { products } = useProducts();
   const bestSellers = products.filter(p => p.rating >= 4.7).slice(0, 4);
   const newArrivals = products.filter(p => p.isNew).slice(0, 4);
   const discountOffers = products.filter(p => p.isOnSale).slice(0, 4);
