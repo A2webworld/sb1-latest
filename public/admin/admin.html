@@ -801,61 +801,50 @@ function deleteProduct(index) {
     }
 
     function updateProduct(index) {
-        const products = [...allProducts];
-        const name = document.getElementById('productName').value.trim();
-        const price = parseFloat(document.getElementById('productPrice').value);
-        const category = document.getElementById('productCategory').value;
-        const description = document.getElementById('productDescription').value.trim();
-        const rating = parseFloat(document.getElementById('productRating').value) || 0;
-        const reviews = parseInt(document.getElementById('productReviews').value) || 0;
-        const inStock = document.getElementById('productInStock').checked;
-        const isNew = document.getElementById('productIsNew').checked;
-        const imageFile = document.getElementById('productImage').files[0];
+    const products = [...allProducts];
+    const name = document.getElementById('productName').value.trim();
+    const price = parseFloat(document.getElementById('productPrice').value);
+    const category = document.getElementById('productCategory').value;
+    const description = document.getElementById('productDescription').value.trim();
+    const rating = parseFloat(document.getElementById('productRating').value) || 0;
+    const reviews = parseInt(document.getElementById('productReviews').value) || 0;
+    const inStock = document.getElementById('productInStock').checked;
+    const isNew = document.getElementById('productIsNew').checked;
+    const imageFile = document.getElementById('productImage').files[0];
 
-        if (!name || !price) {
-            showMessage('Please fill in name and price!', 'error');
-            return;
-        }
+    if (!name || !price) {
+        showMessage('Please fill in name and price!', 'error');
+        return;
+    }
 
-        const updatedProduct = {
-            ...products[index],
-            name,
-            price,
-            category,
-            description,
-            rating,
-            reviews,
-            inStock,
-            isNew
-        };
+    // Get the product being edited
+    const existingProduct = products[index];
+    
+    // Create updated product WITH THE SAME ID
+    const updatedProduct = {
+        ...existingProduct,  // Keep all existing properties including ID
+        name,
+        price,
+        category,
+        description,
+        rating,
+        reviews,
+        inStock,
+        isNew
+    };
 
-        if (imageFile) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                updatedProduct.image = e.target.result;
-                saveUpdate(index, products, updatedProduct);
-            };
-            reader.readAsDataURL(imageFile);
-        } else {
+    // If new image uploaded, update it
+    if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            updatedProduct.image = e.target.result;
             saveUpdate(index, products, updatedProduct);
-        }
+        };
+        reader.readAsDataURL(imageFile);
+    } else {
+        saveUpdate(index, products, updatedProduct);
     }
-
-    function saveUpdate(index, products, updatedProduct) {
-        products[index] = updatedProduct;
-        saveProducts(products);
-
-        document.getElementById('productForm').reset();
-        document.getElementById('imagePreview').style.display = 'none';
-        const submitBtn = document.querySelector('#productForm button[type="submit"]');
-        submitBtn.textContent = '➕ Add Product';
-        submitBtn.className = 'btn btn-success';
-        document.getElementById('productForm').onsubmit = null;
-
-        showMessage('✅ Product updated successfully!', 'success');
-        loadProducts();
-        showTab('list');
-    }
+}
 
     // ============= HELPERS =============
     function showMessage(text, type) {
