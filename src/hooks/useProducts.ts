@@ -21,40 +21,52 @@ export const useProducts = (): UseProductsResult => {
     setError(null);
     
     try {
-      // Load from Supabase via Netlify function
-      const response = await fetch('/.netlify/functions/get-products');
+      // FIRST: Load from products.json (always available)
+      const fallbackResponse = await fetch('/products.json');
+      let fallbackProducts: Product[] = [];
       
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
-        console.log(`✅ Loaded ${data.length} products from Supabase`);
-      } else {
-        // Fallback: Try loading from products.json
-        console.warn('Failed to load from Supabase, trying products.json...');
-        const fallbackResponse = await fetch('/products.json');
-        if (fallbackResponse.ok) {
-          const data = await fallbackResponse.json();
-          setProducts(data);
-          console.log(`✅ Loaded ${data.length} products from products.json (fallback)`);
-        } else {
-          setProducts([]);
-          setError('Failed to load products');
-        }
+      if (fallbackResponse.ok) {
+        fallbackProducts = await fallbackResponse.json();
+        console.log(`✅ Loaded ${fallbackProducts.length} products from products.json (fallback)`);
+        // Set products immediately so user sees something
+        setProducts(fallbackProducts);
       }
+      
+      // THEN: Try to load from Supabase (to get latest updates)
+      try {
+        const response = await fetch('/.netlify/functions/get-products');
+        
+        if (response.ok) {
+          const supabaseProducts = await response.json();
+          if (supabaseProducts && supabaseProducts.length > 0) {
+            console.log(`✅ Loaded ${supabaseProducts.length} products from Supabase`);
+            setProducts(supabaseProducts);
+          } else {
+            console.log('⚠️ Supabase returned 0 products, using fallback');
+            // Keep using fallback products
+          }
+        } else {
+          console.log('⚠️ Supabase function failed, using fallback products');
+        }
+      } catch (supabaseError) {
+        console.log('⚠️ Supabase error, using fallback products:', supabaseError);
+        // Keep using fallback products
+      }
+      
     } catch (err) {
       console.error('Error loading products:', err);
-      // Fallback: Try products.json
+      // Try one more time with products.json
       try {
-        const fallbackResponse = await fetch('/products.json');
-        if (fallbackResponse.ok) {
-          const data = await fallbackResponse.json();
+        const response = await fetch('/products.json');
+        if (response.ok) {
+          const data = await response.json();
           setProducts(data);
-          console.log(`✅ Loaded ${data.length} products from products.json (fallback)`);
+          console.log(`✅ Loaded ${data.length} products from products.json (final fallback)`);
         } else {
           setProducts([]);
           setError('Failed to load products');
         }
-      } catch (fallbackErr) {
+      } catch (finalErr) {
         setProducts([]);
         setError('Failed to load products');
       }
