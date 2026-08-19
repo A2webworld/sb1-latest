@@ -3,7 +3,7 @@ import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useCart } from '../../contexts/CartContext';
-import { X, ShoppingBag } from 'lucide-react';
+import { X, ShoppingBag, Phone, Mail, MapPin, User } from 'lucide-react';
 
 // Load Stripe with publishable key
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_xxxxxxxxxxxxx');
@@ -19,15 +19,17 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
   console.log('💳 CheckoutForm rendered');
   const stripe = useStripe();
   const elements = useElements();
-  console.log('💳 stripe:', stripe);
-  console.log('💳 elements:', elements);
   
   const { cart, total, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Customer contact information (guest checkout)
   const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
+  const [deliveryInstructions, setDeliveryInstructions] = useState('');
 
   // Use total from context, fallback to manual calculation
   const safeTotal = total || cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
@@ -36,10 +38,51 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
   console.log('💰 Total from context:', total);
   console.log('💰 Safe total:', safeTotal);
 
+  // ============= SEND ORDER TO WHATSAPP =============
+  const sendOrderToWhatsApp = () => {
+    const phone = '447440251589';
+    
+    const orderItems = cart.map(item => 
+      `• ${item.name} x${item.quantity} = £${(item.price * item.quantity).toFixed(2)}`
+    ).join('\n');
+    
+    const message = `
+🛒 *NEW ORDER - Afonja Afro Foods*
+─────────────────
+👤 *Customer:* ${customerName}
+📞 *Phone:* ${customerPhone}
+📧 *Email:* ${customerEmail || 'N/A'}
+📍 *Address:* ${customerAddress}
+📝 *Instructions:* ${deliveryInstructions || 'None'}
+─────────────────
+*ORDER ITEMS:*
+${orderItems}
+─────────────────
+💰 *Total: £${safeTotal.toFixed(2)}*
+💳 *Payment: Stripe*
+✅ *Status: PAID*
+
+📅 *Date: ${new Date().toLocaleString()}*
+─────────────────
+Thank you for ordering from Afonja Afro Foods! 🛒
+    `.trim();
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+  };
+
+  // ============= HANDLE PAYMENT SUBMISSION =============
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setIsProcessing(true);
     setError(null);
+
+    // Validate customer information
+    if (!customerName || !customerPhone || !customerAddress) {
+      setError('Please fill in your name, phone, and delivery address');
+      setIsProcessing(false);
+      return;
+    }
 
     if (!stripe || !elements) {
       setError('Stripe not initialized');
@@ -65,7 +108,9 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
           currency: 'gbp',
           customerName,
           customerEmail,
+          customerPhone,
           customerAddress,
+          deliveryInstructions,
           items: (cart || []).map(item => ({
             name: item.name || 'Product',
             price: item.price || 0,
@@ -87,7 +132,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
           card: cardElement,
           billing_details: {
             name: customerName,
-            email: customerEmail,
+            email: customerEmail || 'guest@afonjaafrofoods.co.uk',
+            phone: customerPhone,
             address: {
               line1: customerAddress,
             },
@@ -102,7 +148,13 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
       }
 
       if (paymentIntent?.status === 'succeeded') {
+        // Clear cart
         clearCart();
+        
+        // Send order to WhatsApp
+        sendOrderToWhatsApp();
+        
+        // Call success callback
         onSuccess();
         onClose();
       }
@@ -127,8 +179,18 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* ============ CUSTOMER CONTACT INFORMATION ============ */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-4">
+            <p className="text-sm text-emerald-700 font-medium text-center">
+              🛒 Guest Checkout - No account needed!
+            </p>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <User className="h-4 w-4 text-emerald-600" />
+              Full Name *
+            </label>
             <input
               type="text"
               value={customerName}
@@ -140,30 +202,65 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <Phone className="h-4 w-4 text-emerald-600" />
+              Phone Number *
+            </label>
             <input
-              type="email"
-              value={customerEmail}
-              onChange={(e) => setCustomerEmail(e.target.value)}
+              type="tel"
+              value={customerPhone}
+              onChange={(e) => setCustomerPhone(e.target.value)}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              placeholder="john@example.com"
+              placeholder="+44 7440 251589"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <Mail className="h-4 w-4 text-emerald-600" />
+              Email Address
+            </label>
             <input
-              type="text"
+              type="email"
+              value={customerEmail}
+              onChange={(e) => setCustomerEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              placeholder="john@example.com"
+            />
+            <p className="text-xs text-gray-400 mt-1">We'll send your order confirmation here (optional)</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-emerald-600" />
+              Delivery Address *
+            </label>
+            <textarea
               value={customerAddress}
               onChange={(e) => setCustomerAddress(e.target.value)}
               required
+              rows={2}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               placeholder="123 Main St, London, UK"
             />
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Delivery Instructions
+            </label>
+            <input
+              type="text"
+              value={deliveryInstructions}
+              onChange={(e) => setDeliveryInstructions(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              placeholder="Gate code, landmark, etc."
+            />
+          </div>
+
+          {/* ============ CARD PAYMENT ============ */}
+          <div className="border-t pt-4">
             <label className="block text-sm font-medium text-gray-700 mb-1">Card Details *</label>
             <div className="border border-gray-300 rounded-lg p-3 bg-white">
               <CardElement
@@ -191,6 +288,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onClose, onSuccess }) => {
             </div>
           )}
 
+          {/* ============ ORDER SUMMARY ============ */}
           <div className="border-t pt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Subtotal</span>

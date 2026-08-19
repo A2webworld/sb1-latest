@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Afonja Afro Foods</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .admin-header {
+            background: linear-gradient(135deg, #065f46, #047857);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .admin-header h1 { font-size: 24px; }
+        .admin-header h1 span { color: #f59e0b; }
+        .admin-header .logout-btn {
+            background: #dc2626;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .admin-header .logout-btn:hover { background: #b91c1c; }
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .admin-tabs button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            background: #e0e0e0;
+            color: #333;
+            transition: all 0.3s;
+        }
+        .admin-tabs button.active {
+            background: #065f46;
+            color: white;
+        }
+        .admin-tabs button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .admin-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .admin-panel h2 { margin-bottom: 20px; color: #065f46; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #065f46;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: #065f46; color: white; }
+        .btn-primary:hover { background: #047857; transform: translateY(-2px); }
+        .btn-success { background: #059669; color: white; }
+        .btn-success:hover { background: #047857; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-warning { background: #f59e0b; color: #333; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-outline { background: transparent; border: 2px solid #065f46; color: #065f46; }
+        .btn-outline:hover { background: #065f46; color: white; }
+        
+        .search-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        .search-bar input:focus {
+            outline: none;
+            border-color: #065f46;
+        }
+        .search-bar .search-stats {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .product-list { margin-top: 10px; }
+        .product-item {
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 16px;
+            padding: 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+            background: #fafafa;
+            transition: all 0.3s;
+        }
+        .product-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .product-item img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #f0f0f0;
+        }
+        .product-item .info { flex: 1; min-width: 0; }
+        .product-item .info h4 { 
+            margin-bottom: 4px; 
+            font-size: 16px;
+            word-break: break-word;
+        }
+        .product-item .info .price { color: #065f46; font-weight: 600; }
+        .product-item .info .category { 
+            color: #666; 
+            font-size: 13px;
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 2px 10px;
+            border-radius: 12px;
+            margin-top: 4px;
+        }
+        .product-item .info .product-id {
+            color: #999;
+            font-size: 11px;
+            display: block;
+            margin-top: 2px;
+        }
+        .product-item .actions { 
+            display: flex; 
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .product-item .actions button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .product-item .actions .edit-btn { background: #f59e0b; color: #333; }
+        .product-item .actions .delete-btn { background: #dc2626; color: white; }
+        .product-item .actions .view-btn { background: #065f46; color: white; }
+        .product-item .status-badge {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+        .status-badge.in-stock { background: #d1fae5; color: #065f46; }
+        .status-badge.out-of-stock { background: #fee2e2; color: #991b1b; }
+        .status-badge.new { background: #fef3c7; color: #92400e; }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 80px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .login-container h2 { text-align: center; margin-bottom: 24px; color: #065f46; }
+        .login-container .btn { width: 100%; }
+        .flash-message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .flash-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            display: block;
+        }
+        .flash-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+        .image-preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 2px dashed #ccc;
+            padding: 4px;
+            object-fit: cover;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .loading-spinner .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #065f46;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .product-item { 
+                grid-template-columns: 1fr; 
+                text-align: center;
+            }
+            .product-item img { margin: 0 auto; }
+            .product-item .actions { justify-content: center; }
+            .admin-header { flex-direction: column; text-align: center; }
+            .search-bar { flex-direction: column; }
+            .search-bar .search-stats { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <h2>🔐 Admin Login</h2>
+        <div id="loginMessage" class="flash-message"></div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="admin@afonjaafrofoods.co.uk" required />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <p style="text-align:center;margin-top:16px;color:#666;font-size:13px;">
+            Default: admin@afonjaafrofoods.co.uk / admin123
+        </p>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="admin-container" style="display:none;">
+        <div class="admin-header">
+            <h1>🛒 Afonja <span>Afro Foods</span></h1>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <span style="font-size:13px;opacity:0.8;" id="productCount">0 products</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="admin-tabs">
+            <button class="active" onclick="showTab('add')">➕ Add Product</button>
+            <button onclick="showTab('list')">📋 Manage Products</button>
+        </div>
+
+        <div class="admin-panel">
+            <!-- Add Product Tab -->
+            <div id="tab-add">
+                <h2>➕ Add New Product</h2>
+                <div id="productMessage" class="flash-message"></div>
+                <form id="productForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Product Name *</label>
+                            <input type="text" id="productName" placeholder="e.g., Palm Oil" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Price (£) *</label>
+                            <input type="number" step="0.01" id="productPrice" placeholder="0.00" required />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Category *</label>
+                            <select id="productCategory" required>
+                                <option value="cooking-oils">Cooking Oils</option>
+                                <option value="condiments-seasonings">Condiments & Seasonings</option>
+                                <option value="grains-flours">Grains & Flours</option>
+                                <option value="vegetables">Vegetables</option>
+                                <option value="snacks-treats">Snacks & Treats</option>
+                                <option value="drinks-beverages">Drinks & Beverages</option>
+                                <option value="household-items">Household Items</option>
+                                <option value="beauty-personal-care">Beauty & Personal Care</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Image</label>
+                            <input type="file" id="productImage" accept="image/*" />
+                            <img id="imagePreview" class="image-preview" style="display:none;" alt="Preview" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="productDescription" placeholder="Describe the product..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Rating (0-5)</label>
+                            <input type="number" id="productRating" step="0.1" min="0" max="5" placeholder="4.5" />
+                        </div>
+                        <div class="form-group">
+                            <label>Reviews</label>
+                            <input type="number" id="productReviews" placeholder="0" />
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="productInStock" checked /> In Stock
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="productIsNew" /> New Arrival
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">➕ Add Product</button>
+                </form>
+            </div>
+
+            <!-- Manage Products Tab -->
+            <div id="tab-list" style="display:none;">
+                <h2>📋 Manage Products</h2>
+                
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="🔍 Search products by name, category, or description..." 
+                        oninput="filterProducts()"
+                    />
+                    <button class="btn btn-outline" onclick="clearSearch()">Clear</button>
+                    <span class="search-stats" id="searchStats">Showing all products</span>
+                </div>
+                
+                <div id="productList" class="product-list">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading products...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============= CONFIGURATION =============
+    const PRODUCTS_KEY = 'afonja_products';
+    const ADMIN_EMAIL = 'admin@afonjaafrofoods.co.uk';
+    const ADMIN_PASSWORD = 'admin123';
+    let allProducts = [];
+    let filteredProducts = [];
+
+    // ============= LOGIN =============
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            loadProducts();
+            showTab('add');
+            document.getElementById('loginMessage').className = 'flash-message';
+        } else {
+            const msg = document.getElementById('loginMessage');
+            msg.className = 'flash-message error';
+            msg.textContent = '❌ Invalid email or password!';
+        }
+    });
+
+    function logout() {
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('loginScreen').style.display = 'block';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginMessage').className = 'flash-message';
+    }
+
+    // ============= TAB NAVIGATION =============
+    function showTab(tab) {
+        document.querySelectorAll('.admin-tabs button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.admin-tabs button').forEach(btn => {
+            if (btn.textContent.includes(tab === 'add' ? 'Add' : 'Manage')) {
+                btn.classList.add('active');
+            }
+        });
+        document.getElementById('tab-add').style.display = tab === 'add' ? 'block' : 'none';
+        document.getElementById('tab-list').style.display = tab === 'list' ? 'block' : 'none';
+        if (tab === 'list') {
+            renderProductList(filteredProducts.length > 0 ? filteredProducts : allProducts);
+        }
+    }
+
+    // ============= SEARCH / FILTER =============
+    function filterProducts() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const stats = document.getElementById('searchStats');
+        
+        if (!query) {
+            filteredProducts = [...allProducts];
+            stats.textContent = `Showing all ${filteredProducts.length} products`;
+        } else {
+            filteredProducts = allProducts.filter(p => 
+                (p.name && p.name.toLowerCase().includes(query)) ||
+                (p.category && p.category.toLowerCase().includes(query)) ||
+                (p.description && p.description.toLowerCase().includes(query)) ||
+                (p.id && p.id.toString().includes(query))
+            );
+            stats.textContent = `Found ${filteredProducts.length} product${filteredProducts.length !== 1 ? 's' : ''} matching "${query}"`;
+        }
+        
+        renderProductList(filteredProducts);
+        updateProductCount();
+    }
+
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        filterProducts();
+    }
+
+    // ============= PRODUCT OPERATIONS =============
+    function getProducts() {
+        try {
+            return JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+        } catch {
+            return [];
+        }
+    }
+
+    function saveProducts(products) {
+        localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+        allProducts = products;
+        filteredProducts = [...products];
+        updateProductCount();
+    }
+
+    async function loadProducts() {
+        const list = document.getElementById('productList');
+        list.innerHTML = `<div class="loading-spinner"><div class="spinner"></div><p>Loading products...</p></div>`;
+
+        try {
+            let products = [];
+            
+            // Determine the base URL
+            const baseUrl = window.location.origin;
+            const productsUrl = `${baseUrl}/products.json`;
+            
+            console.log(`📡 Fetching products from: ${productsUrl}`);
+            
+            // Load from public/products.json
+            try {
+                const response = await fetch(productsUrl);
+                if (response.ok) {
+                    products = await response.json();
+                    console.log(`✅ Loaded ${products.length} products from products.json`);
+                    // Save to localStorage as backup
+                    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+                    allProducts = products;
+                    filteredProducts = [...products];
+                    updateProductCount();
+                    document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
+                    renderProductList(allProducts);
+                    return;
+                } else {
+                    console.warn('products.json not found, checking localStorage...');
+                }
+            } catch (e) {
+                console.warn('Error loading products.json:', e);
+            }
+            
+            // Fallback: Try localStorage
+            let localProducts = getProducts();
+            if (localProducts.length > 0) {
+                products = localProducts;
+                console.log(`✅ Loaded ${products.length} products from localStorage`);
+            } else {
+                // Final fallback: sample data
+                products = getSampleProducts();
+                saveProducts(products);
+                console.log(`✅ Using ${products.length} sample products`);
+            }
+            
+            allProducts = products;
+            filteredProducts = [...products];
+            updateProductCount();
+            document.getElementById('searchStats').textContent = `Showing all ${allProducts.length} products`;
+            renderProductList(allProducts);
+            
+        } catch (error) {
+            console.error('Error loading products:', error);
+            const products = getSampleProducts();
+            saveProducts(products);
+            renderProductList(products);
+        }
+    }
+
+    function updateProductCount() {
+        const count = document.getElementById('productCount');
+        if (count) {
+            count.textContent = `${allProducts.length} products`;
+        }
+    }
+
+    function renderProductList(products) {
+        const list = document.getElementById('productList');
+        
+        if (!products || products.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <div class="icon">📦</div>
+                    <h3>No products found</h3>
+                    <p>Try adjusting your search or add a new product.</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = products.map((product, index) => {
+            // Find the actual index in allProducts for editing/deleting
+            const realIndex = allProducts.findIndex(p => p.id === product.id);
+            const displayIndex = realIndex !== -1 ? realIndex : index;
+            
+            const imageSrc = product.image || 'https://via.placeholder.com/70x70?text=No+Image';
+            const inStock = product.inStock !== false;
+            const isNew = product.isNew || false;
+            
+            return `
+            <div class="product-item" data-index="${displayIndex}">
+                <img src="${imageSrc}" alt="${product.name || 'Product'}" 
+                     onerror="this.src='https://via.placeholder.com/70x70?text=No+Image'" />
+                <div class="info">
+                    <h4>${product.name || 'Unnamed Product'}</h4>
+                    <div class="price">£${(product.price || 0).toFixed(2)}</div>
+                    <span class="category">${product.category || 'Uncategorized'}</span>
+                    <span class="status-badge ${inStock ? 'in-stock' : 'out-of-stock'}">
+                        ${inStock ? '✅ In Stock' : '❌ Out of Stock'}
+                    </span>
+                    ${isNew ? '<span class="status-badge new">🆕 New</span>' : ''}
+                    ${product.rating ? `<span style="font-size:13px;color:#666;margin-left:8px;">⭐ ${product.rating}</span>` : ''}
+                    <span class="product-id">ID: ${product.id || 'N/A'}</span>
+                    ${product.description ? `<div style="font-size:13px;color:#666;margin-top:4px;">${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}</div>` : ''}
+                </div>
+                <div class="actions">
+                    <button class="view-btn" onclick="viewProduct(${displayIndex})">👁️</button>
+                    <button class="edit-btn" onclick="editProduct(${displayIndex})">✏️</button>
+                    <button class="delete-btn" onclick="deleteProduct(${displayIndex})">🗑️</button>
+                </div>
+            </div>
+        `}).join('');
+    }
+
+    // View Product
+    function viewProduct(index) {
+        const product = allProducts[index];
+        if (!product) return;
+        
+        alert(
+            `📦 ${product.name}\n` +
+            `💰 Price: £${(product.price || 0).toFixed(2)}\n` +
+            `📂 Category: ${product.category || 'Uncategorized'}\n` +
+            `⭐ Rating: ${product.rating || 'N/A'}\n` +
+            `📝 Reviews: ${product.reviews || 0}\n` +
+            `📋 ID: ${product.id || 'N/A'}\n` +
+            `📄 Description: ${product.description || 'No description'}\n` +
+            `📦 In Stock: ${product.inStock !== false ? 'Yes' : 'No'}\n` +
+            `🆕 New: ${product.isNew ? 'Yes' : 'No'}`
+        );
+    }
+
+    // Add Product
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const name = document.getElementById('productName').value.trim();
+        const price = parseFloat(document.getElementById('productPrice').value);
+        const category = document.getElementById('productCategory').value;
+        const description = document.getElementById('productDescription').value.trim();
+        const rating = parseFloat(document.getElementById('productRating').value) || 0;
+        const reviews = parseInt(document.getElementById('productReviews').value) || 0;
+        const inStock = document.getElementById('productInStock').checked;
+        const isNew = document.getElementById('productIsNew').checked;
+        const imageFile = document.getElementById('productImage').files[0];
+
+        if (!name || !price) {
+            showMessage('Please fill in name and price!', 'error');
+            return;
+        }
+
+        const products = [...allProducts];
+        const newProduct = {
+            id: Date.now().toString(),
+            name,
+            price,
+            category,
+            description,
+            rating,
+            reviews,
+            inStock,
+            isNew,
+            image: 'https://via.placeholder.com/400x400?text=' + encodeURIComponent(name.substring(0, 15))
+        };
+
+        if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                newProduct.image = e.target.result;
+                saveAndAddProduct(products, newProduct);
+            };
+            reader.readAsDataURL(imageFile);
+        } else {
+            saveAndAddProduct(products, newProduct);
+        }
+    });
+
+    function saveAndAddProduct(products, newProduct) {
+        products.unshift(newProduct);
+        saveProducts(products);
+        
+        document.getElementById('productForm').reset();
+        document.getElementById('imagePreview').style.display = 'none';
+        showMessage('✅ Product added successfully!', 'success');
+        loadProducts();
+        showTab('list');
+    }
+
+    // Delete Product
+    function deleteProduct(index) {
+        if (!confirm('Are you sure you want to delete this product?')) return;
+        
+        const products = allProducts.filter((_, i) => i !== index);
+        saveProducts(products);
+        loadProducts();
+        showMessage('🗑️ Product deleted!', 'success');
+    }
+
+    // Edit Product
+    function editProduct(index) {
+        const product = allProducts[index];
+        if (!product) {
+            showMessage('❌ Product not found!', 'error');
+            return;
+        }
+        
+        document.getElementById('productName').value = product.name || '';
+        document.getElementById('productPrice').value = product.price || '';
+        document.getElementById('productCategory').value = product.category || 'cooking-oils';
+        document.getElementById('productDescription').value = product.description || '';
+        document.getElementById('productRating').value = product.rating || '';
+        document.getElementById('productReviews').value = product.reviews || '';
+        document.getElementById('productInStock').checked = product.inStock !== false;
+        document.getElementById('productIsNew').checked = product.isNew || false;
+        
+        if (product.image && product.image.startsWith('http')) {
+            const preview = document.getElementById('imagePreview');
+            preview.src = product.image;
+            preview.style.display = 'block';
+        } else {
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+
+        const form = document.getElementById('productForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.textContent = '✏️ Update Product';
+        submitBtn.className = 'btn btn-warning';
+        form.dataset.editIndex = index;
+
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            updateProduct(index);
+        };
+
+        showTab('add');
+        document.querySelector('.admin-tabs button:first-child').click();
+        document.getElementById('tab-add').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updateProduct(index) {
+        const products = [...allProducts];
+        const name = document.getElementById('productName').value.trim();
+        const price = parseFloat(document.getElementById('productPrice').value);
+        const category = document.getElementById('productCategory').value;
+        const description = document.getElementById('productDescription').value.trim();
+        const rating = parseFloat(document.getElementById('productRating').value) || 0;
+        const reviews = parseInt(document.getElementById('productReviews').value) || 0;
+        const inStock = document.getElementById('productInStock').checked;
+        const isNew = document.getElementById('productIsNew').checked;
+        const imageFile = document.getElementById('productImage').files[0];
+
+        if (!name || !price) {
+            showMessage('Please fill in name and price!', 'error');
+            return;
+        }
+
+        const updatedProduct = {
+            ...products[index],
+            name,
+            price,
+            category,
+            description,
+            rating,
+            reviews,
+            inStock,
+            isNew
+        };
+
+        if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                updatedProduct.image = e.target.result;
+                saveUpdate(index, products, updatedProduct);
+            };
+            reader.readAsDataURL(imageFile);
+        } else {
+            saveUpdate(index, products, updatedProduct);
+        }
+    }
+
+    function saveUpdate(index, products, updatedProduct) {
+        products[index] = updatedProduct;
+        saveProducts(products);
+
+        document.getElementById('productForm').reset();
+        document.getElementById('imagePreview').style.display = 'none';
+        const submitBtn = document.querySelector('#productForm button[type="submit"]');
+        submitBtn.textContent = '➕ Add Product';
+        submitBtn.className = 'btn btn-success';
+        document.getElementById('productForm').onsubmit = null;
+
+        showMessage('✅ Product updated successfully!', 'success');
+        loadProducts();
+        showTab('list');
+    }
+
+    // ============= HELPERS =============
+    function showMessage(text, type) {
+        const msg = document.getElementById('productMessage');
+        msg.className = `flash-message ${type}`;
+        msg.textContent = text;
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 3000);
+    }
+
+    // Image preview
+    document.getElementById('productImage').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // ============= SAMPLE DATA =============
+    function getSampleProducts() {
+        return [
+            { 
+                id: '1', 
+                name: 'Palm Oil', 
+                price: 5.49, 
+                category: 'cooking-oils', 
+                description: 'Authentic red palm oil from West Africa', 
+                image: 'https://via.placeholder.com/400x400?text=Palm+Oil', 
+                rating: 4.8, 
+                reviews: 98, 
+                inStock: true, 
+                isNew: false 
+            },
+            { 
+                id: '2', 
+                name: 'Garri (Cassava Flakes)', 
+                price: 5.99, 
+                category: 'grains-flours', 
+                description: 'High-quality garri made from fermented cassava', 
+                image: 'https://via.placeholder.com/400x400?text=Garri', 
+                rating: 4.7, 
+                reviews: 56, 
+                inStock: true, 
+                isNew: false 
+            },
+            { 
+                id: '3', 
+                name: 'Fresh Yam', 
+                price: 12.99, 
+                category: 'vegetables', 
+                description: 'Premium quality African yam', 
+                image: 'https://via.placeholder.com/400x400?text=Yam', 
+                rating: 4.8, 
+                reviews: 45, 
+                inStock: true, 
+                isNew: true 
+            }
+        ];
+    }
+
+    // ============= AUTO-REFRESH =============
+    setInterval(() => {
+        if (document.getElementById('tab-list').style.display !== 'none') {
+            loadProducts();
+        }
+    }, 60000);
+
+    console.log('🛒 Afonja Afro Foods Admin Panel loaded!');
+    console.log('📧 Login: admin@afonjaafrofoods.co.uk');
+    console.log('🔑 Password: admin123');
+</script>
+</body>
+</html>
