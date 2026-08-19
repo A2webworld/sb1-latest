@@ -727,7 +727,9 @@ function saveAndAddProduct(products, newProduct) {
 
 // ============= SAVE UPDATE =============
 function saveUpdate(index, products, updatedProduct) {
+    // Replace the product at the SAME index
     products[index] = updatedProduct;
+    
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
     allProducts = products;
     filteredProducts = [...products];
@@ -741,6 +743,7 @@ function saveUpdate(index, products, updatedProduct) {
     submitBtn.textContent = '➕ Add Product';
     submitBtn.className = 'btn btn-success';
     document.getElementById('productForm').onsubmit = null;
+    window.editingIndex = undefined;
     showTab('list');
     saveToServer(products);
 }
@@ -761,44 +764,52 @@ function deleteProduct(index) {
 
     // Edit Product
     function editProduct(index) {
-        const product = allProducts[index];
-        if (!product) {
-            showMessage('❌ Product not found!', 'error');
-            return;
-        }
-        
-        document.getElementById('productName').value = product.name || '';
-        document.getElementById('productPrice').value = product.price || '';
-        document.getElementById('productCategory').value = product.category || 'cooking-oils';
-        document.getElementById('productDescription').value = product.description || '';
-        document.getElementById('productRating').value = product.rating || '';
-        document.getElementById('productReviews').value = product.reviews || '';
-        document.getElementById('productInStock').checked = product.inStock !== false;
-        document.getElementById('productIsNew').checked = product.isNew || false;
-        
-        if (product.image && product.image.startsWith('http')) {
-            const preview = document.getElementById('imagePreview');
-            preview.src = product.image;
-            preview.style.display = 'block';
-        } else {
-            document.getElementById('imagePreview').style.display = 'none';
-        }
-
-        const form = document.getElementById('productForm');
-        const submitBtn = form.querySelector('button[type="submit"]');
-        submitBtn.textContent = '✏️ Update Product';
-        submitBtn.className = 'btn btn-warning';
-        form.dataset.editIndex = index;
-
-        form.onsubmit = function(e) {
-            e.preventDefault();
-            updateProduct(index);
-        };
-
-        showTab('add');
-        document.querySelector('.admin-tabs button:first-child').click();
-        document.getElementById('tab-add').scrollIntoView({ behavior: 'smooth' });
+    const product = allProducts[index];
+    if (!product) {
+        showMessage('❌ Product not found!', 'error');
+        return;
     }
+    
+    // Store the index in a global variable
+    window.editingIndex = index;
+    
+    document.getElementById('productName').value = product.name || '';
+    document.getElementById('productPrice').value = product.price || '';
+    document.getElementById('productCategory').value = product.category || 'cooking-oils';
+    document.getElementById('productDescription').value = product.description || '';
+    document.getElementById('productRating').value = product.rating || '';
+    document.getElementById('productReviews').value = product.reviews || '';
+    document.getElementById('productInStock').checked = product.inStock !== false;
+    document.getElementById('productIsNew').checked = product.isNew || false;
+    
+    if (product.image && product.image.startsWith('http')) {
+        const preview = document.getElementById('imagePreview');
+        preview.src = product.image;
+        preview.style.display = 'block';
+    } else {
+        document.getElementById('imagePreview').style.display = 'none';
+    }
+
+    const form = document.getElementById('productForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.textContent = '✏️ Update Product';
+    submitBtn.className = 'btn btn-warning';
+
+    // Remove any existing submit listeners and add a new one
+    form.onsubmit = function(e) {
+        e.preventDefault();
+        const editIndex = window.editingIndex;
+        if (editIndex !== undefined) {
+            updateProduct(editIndex);
+        } else {
+            showMessage('❌ Error: No product selected for editing', 'error');
+        }
+    };
+
+    showTab('add');
+    document.querySelector('.admin-tabs button:first-child').click();
+    document.getElementById('tab-add').scrollIntoView({ behavior: 'smooth' });
+}
 
     function updateProduct(index) {
     const products = [...allProducts];
@@ -817,7 +828,7 @@ function deleteProduct(index) {
         return;
     }
 
-    // Get the product being edited
+    // Get the product being edited using the index
     const existingProduct = products[index];
     
     // Create updated product WITH THE SAME ID
