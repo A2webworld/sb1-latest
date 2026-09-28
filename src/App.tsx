@@ -12,6 +12,7 @@ import ReturnPolicy from './pages/Static/ReturnPolicy';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
 import { AuthProvider } from './contexts/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -30,7 +31,6 @@ function App() {
   const handlePageChange = (page: string) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Update the browser URL without refreshing the page
     window.history.pushState({}, '', `/${page}`);
   };
 
@@ -58,19 +58,21 @@ function App() {
   };
 
   return (
-    <AuthProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Header currentPage={currentPage} onPageChange={handlePageChange} />
-            <main>
-              {renderPage()}
-            </main>
-            <Footer onPageChange={handlePageChange} />
-          </div>
-        </WishlistProvider>
-      </CartProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <div className="min-h-screen bg-gray-50">
+              <Header currentPage={currentPage} onPageChange={handlePageChange} />
+              <main>
+                {renderPage()}
+              </main>
+              <Footer onPageChange={handlePageChange} />
+            </div>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

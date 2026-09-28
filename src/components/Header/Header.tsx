@@ -17,6 +17,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -30,6 +31,8 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
     if (searchQuery.trim()) {
       onPageChange('shop');
       setIsSearchOpen(false);
+      setIsMobileSearchOpen(false);
+      setSearchQuery('');
     }
   };
 
@@ -101,6 +104,19 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
 
           {/* Right Side Icons */}
           <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-4">
+            {/* Mobile Search Toggle Button */}
+            <button
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              className="md:hidden relative p-1 sm:p-2 text-gray-600 hover:text-emerald-600 transition-colors"
+              aria-label="Toggle search"
+            >
+              {isMobileSearchOpen ? (
+                <X className="h-5 w-5 sm:h-6 sm:w-6" />
+              ) : (
+                <Search className="h-5 w-5 sm:h-6 sm:w-6" />
+              )}
+            </button>
+
             {/* Wishlist */}
             <button className="relative p-1 sm:p-2 text-gray-600 hover:text-emerald-600 transition-colors">
               <Heart className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -132,7 +148,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               )}
             </div>
 
-            {/* User Account - Clickable Sign In */}
+            {/* User Account */}
             <div className="relative">
               {user ? (
                 <div className="flex items-center space-x-1 sm:space-x-2">
@@ -171,7 +187,46 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Mobile Search Bar - Persistent (shows when mobile search is toggled) */}
+      {isMobileSearchOpen && (
+        <div className="md:hidden bg-white border-t px-3 py-2 relative">
+          <form onSubmit={handleSearch} className="relative">
+            <input
+              type="text"
+              placeholder="Search for products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </form>
+
+          {/* Live suggestions dropdown */}
+          {searchQuery.length > 0 && (
+            <SearchDropdown
+              query={searchQuery}
+              onClose={() => {}}
+              onProductSelect={() => {
+                setIsMobileSearchOpen(false);
+                setSearchQuery('');
+                onPageChange('shop');
+              }}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Navigation - Desktop */}
       <nav className="bg-gray-50 border-t overflow-x-auto">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="hidden md:flex items-center justify-center space-x-6 lg:space-x-8 py-3">
@@ -215,66 +270,46 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t max-h-[70vh] overflow-y-auto">
-          <div className="px-4 py-3 space-y-3">
-            {/* Mobile Search */}
-            <form onSubmit={handleSearch} className="relative">
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-4 pr-12 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-              />
+          <div className="px-4 py-3 space-y-1">
+            <button
+              onClick={() => {
+                onPageChange('home');
+                setIsMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
+            >
+              Home
+            </button>
+            <button
+              onClick={() => {
+                onPageChange('shop');
+                setIsMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
+            >
+              Shop All
+            </button>
+            {categories.map((category) => (
               <button
-                type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-            </form>
-
-            {/* Mobile Navigation Links */}
-            <div className="space-y-1">
-              <button
-                onClick={() => {
-                  onPageChange('home');
-                  setIsMenuOpen(false);
-                }}
-                className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
-              >
-                Home
-              </button>
-              <button
+                key={category.id}
                 onClick={() => {
                   onPageChange('shop');
                   setIsMenuOpen(false);
                 }}
                 className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
               >
-                Shop All
+                {category.name}
               </button>
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => {
-                    onPageChange('shop');
-                    setIsMenuOpen(false);
-                  }}
-                  className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
-                >
-                  {category.name}
-                </button>
-              ))}
-              <button
-                onClick={() => {
-                  onPageChange('contact');
-                  setIsMenuOpen(false);
-                }}
-                className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
-              >
-                Contact
-              </button>
-            </div>
+            ))}
+            <button
+              onClick={() => {
+                onPageChange('contact');
+                setIsMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
+            >
+              Contact
+            </button>
           </div>
         </div>
       )}
@@ -315,9 +350,6 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
                 Sign In
               </button>
             </form>
-            <p className="text-center text-sm text-gray-500 mt-4">
-              Don't have an account? <button className="text-emerald-600 hover:text-emerald-700">Sign Up</button>
-            </p>
           </div>
         </div>
       )}

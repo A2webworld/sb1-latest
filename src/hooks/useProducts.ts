@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Product } from '../types';
 
 interface UseProductsResult {
@@ -15,94 +15,52 @@ export const useProducts = (): UseProductsResult => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const supabaseWon = useRef(false);
 
   const loadProducts = async () => {
     setLoading(true);
     setError(null);
-    
+    supabaseWon.current = false;
+
+    // 1. Load fallback first (fast)
     try {
-      // FIRST: Load from products.json (fast fallback so user sees something immediately)
       const fallbackResponse = await fetch('/products.json');
-      let fallbackProducts: Product[] = [];
-      
-      if (fallbackResponse.ok) {
-        fallbackProducts = await fallbackResponse.json();
+      if (fallbackResponse.ok && !supabaseWon.current) {
+        const fallbackProducts = await fallbackResponse.json();
         console.log(`✅ Loaded ${fallbackProducts.length} products from products.json (fallback)`);
-        // Show fallback immediately
         setProducts(fallbackProducts);
       }
-      
-      // THEN: Try Supabase (primary source - has latest data)
-      try {
-        const response = await fetch('/.netlify/functions/get-products');
-        
-        if (response.ok) {
-          const supabaseProducts = await response.json();
-          if (supabaseProducts && supabaseProducts.length > 0) {
-            console.log(`✅ Loaded ${supabaseProducts.length} products from Supabase`);
-            setProducts(supabaseProducts);
-            return; // Success - use Supabase data (replaces fallback)
-          } else {
-            console.log('⚠️ Supabase returned 0 products, using fallback');
-          }
-        } else {
-          console.log('⚠️ Supabase function failed, using fallback products');
-        }
-      } catch (supabaseError) {
-        console.log('⚠️ Supabase error, using fallback products:', supabaseError);
-      }
-      
-      // If we reach here, Supabase didn't work but fallback was already set
-      
     } catch (err) {
-      console.error('Error loading products:', err);
-      // Try one more time with products.json
-      try {
-        const response = await fetch('/products.json');
-        if (response.ok) {
-          const data = await response.json();
-          setProducts(data);
-          console.log(`✅ Loaded ${data.length} products from products.json (final fallback)`);
-        } else {
-          setProducts([]);
-          setError('Failed to load products');
-        }
-      } catch (finalErr) {
-        setProducts([]);
-        setError('Failed to load products');
-      }
-    } finally {
-      setLoading(false);
+      console.warn('Fallback load failed:', err);
     }
+
+    // 2. Load Supabase (authoritative source)
+    try {
+      const response = await fetch('/.netlify/functions/get-products');
+      if (response.ok) {
+        const supabaseProducts = await response.json();
+        if (supabaseProducts && supabaseProducts.length > 0) {
+          console.log(`✅ Loaded ${supabaseProducts.length} products from Supabase`);
+          supabaseWon.current = true;
+          setProducts(supabaseProducts);
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase load failed:', err);
+    }
+
+    setLoading(false);
   };
 
   useEffect(() => {
     loadProducts();
   }, []);
 
-  const addProduct = (product: Product) => {
-    setProducts(prev => [...prev, product]);
-  };
+  const addProduct = (product: Product) => setProducts(prev => [...prev, product]);
+  const updateProduct = (id: string, updates: Partial<Product>) =>
+    setProducts(prev => prev.map(p => (p.id === id ? { ...p, ...updates } : p)));
+  const removeProduct = (id: string) =>
+    setProducts(prev => prev.filter(p => p.id !== id));
 
-  const updateProduct = (id: string, updates: Partial<Product>) => {
-    setProducts(prev => 
-      prev.map(product => 
-        product.id === id ? { ...product, ...updates } : product
-      )
-    );
-  };
-
-  const removeProduct = (id: string) => {
-    setProducts(prev => prev.filter(product => product.id !== id));
-  };
-
-  return {
-    products,
-    loading,
-    error,
-    addProduct,
-    updateProduct,
-    removeProduct,
-    reloadProducts: loadProducts
-  };
+  return { products, loading, error, addProduct, updateProduct, removeProduct, reloadProducts: loadProducts };
 };
