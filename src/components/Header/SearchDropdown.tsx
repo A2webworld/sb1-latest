@@ -5,7 +5,7 @@ import { useProducts } from '../../hooks/useProducts';
 interface SearchDropdownProps {
   query: string;
   onClose: () => void;
-  onProductSelect: () => void;
+  onProductSelect: (productId?: string) => void;
 }
 
 export default function SearchDropdown({ query, onClose, onProductSelect }: SearchDropdownProps) {
@@ -33,7 +33,7 @@ export default function SearchDropdown({ query, onClose, onProductSelect }: Sear
           <button
             key={product.id}
             onClick={() => {
-              onProductSelect();
+              onProductSelect(String(product.id));
               onClose();
             }}
             className="w-full flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg text-left"

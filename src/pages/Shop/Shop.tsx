@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Filter, Grid, List, ChevronDown } from 'lucide-react';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { useProducts } from '../../hooks/useProducts';
@@ -6,13 +7,56 @@ import { categories } from '../../data/categories';
 
 export default function Shop() {
   const { products, loading, error } = useProducts();
+  const [searchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(20);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  const targetProductId = searchParams.get('product');
+  const urlCategory = searchParams.get('category');
+
+  // React to URL params (?category=vegetables or ?product=123)
+  useEffect(() => {
+    if (urlCategory) {
+      setSelectedCategory(urlCategory);
+    } else {
+      setSelectedCategory('all');
+    }
+    setCurrentPage(1);
+  }, [urlCategory]);
+
+  // React to ?product=<id> — find it, jump to its page, scroll, highlight
+  useEffect(() => {
+    if (!targetProductId || loading || products.length === 0) return;
+
+    // Reset filters so the target can't be hidden
+    setSelectedCategory('all');
+    setPriceRange([0, 10000]);
+
+    // Find its page and jump there
+    const idx = products.findIndex(p => String(p.id) === targetProductId);
+    if (idx >= 0) {
+      const targetPage = Math.floor(idx / productsPerPage) + 1;
+      setCurrentPage(targetPage);
+    }
+
+    // Wait for DOM, then scroll + highlight
+    const timer = setTimeout(() => {
+      const el = document.getElementById(`product-${targetProductId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedId(targetProductId);
+        setTimeout(() => setHighlightedId(null), 2500);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [targetProductId, loading, products, productsPerPage]);
 
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = products;
@@ -23,7 +67,7 @@ export default function Shop() {
     }
 
     // Filter by price range
-    filtered = filtered.filter(product => 
+    filtered = filtered.filter(product =>
       product.price >= priceRange[0] && product.price <= priceRange[1]
     );
 
@@ -35,10 +79,10 @@ export default function Shop() {
         case 'price-high':
           return b.price - a.price;
         case 'rating':
-          return b.rating - a.rating;
+          return (b.rating ?? 0) - (a.rating ?? 0);
         case 'name':
         default:
-          return a.name.localeCompare(b.name);
+          return (a.name ?? '').localeCompare(b.name ?? '');
       }
     });
 
@@ -51,22 +95,22 @@ export default function Shop() {
   const paginatedProducts = filteredAndSortedProducts.slice(startIndex, startIndex + productsPerPage);
 
   if (loading) {
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading products...</p>
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading products...</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700"
           >
@@ -139,7 +183,7 @@ export default function Shop() {
                     <input
                       type="range"
                       min="0"
-                      max="100"
+                      max="2000"
                       value={priceRange[1]}
                       onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                       className="w-full"
@@ -155,7 +199,7 @@ export default function Shop() {
                 <button
                   onClick={() => {
                     setSelectedCategory('all');
-                    setPriceRange([0, 100]);
+                    setPriceRange([0, 2000]);
                   }}
                   className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-colors"
                 >
@@ -172,7 +216,7 @@ export default function Shop() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
-                    Showing {startIndex + 1}-{Math.min(startIndex + productsPerPage, filteredAndSortedProducts.length)} of {filteredAndSortedProducts.length} products
+                    Showing {filteredAndSortedProducts.length === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + productsPerPage, filteredAndSortedProducts.length)} of {filteredAndSortedProducts.length} products
                   </span>
                 </div>
 
@@ -214,12 +258,22 @@ export default function Shop() {
             {/* Products Grid */}
             {paginatedProducts.length > 0 ? (
               <div className={`grid gap-6 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                viewMode === 'grid'
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                   : 'grid-cols-1'
               }`}>
                 {paginatedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <div
+                    key={product.id}
+                    id={`product-${product.id}`}
+                    className={`transition-all duration-500 rounded-lg ${
+                      highlightedId === String(product.id)
+                        ? 'ring-4 ring-emerald-500 ring-offset-2 shadow-xl'
+                        : ''
+                    }`}
+                  >
+                    <ProductCard product={product} />
+                  </div>
                 ))}
               </div>
             ) : (
@@ -242,7 +296,7 @@ export default function Shop() {
                 >
                   Previous
                 </button>
-                
+
                 {[...Array(Math.min(5, totalPages))].map((_, i) => {
                   const pageNum = i + 1;
                   return (
@@ -259,7 +313,7 @@ export default function Shop() {
                     </button>
                   );
                 })}
-                
+
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}

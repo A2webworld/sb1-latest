@@ -7,6 +7,7 @@ import { categories } from '../../data/categories';
 import CartDropdown from './CartDropdown';
 import SearchDropdown from './SearchDropdown';
 import Checkout from '../../pages/Checkout/Checkout';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   currentPage: string;
@@ -21,15 +22,16 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  
+
   const { itemCount } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      onPageChange('shop');
+      navigate('/shop');
       setIsSearchOpen(false);
       setIsMobileSearchOpen(false);
       setSearchQuery('');
@@ -64,7 +66,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
           {/* Logo */}
-          <div className="flex-shrink-0 cursor-pointer" onClick={() => onPageChange('home')}>
+          <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate('/')}>
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-emerald-600">
               Afonja <span className="text-orange-500">Afro Foods</span>
             </h1>
@@ -94,9 +96,14 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               <SearchDropdown
                 query={searchQuery}
                 onClose={() => setIsSearchOpen(false)}
-                onProductSelect={() => {
+                onProductSelect={(productId?: string) => {
                   setIsSearchOpen(false);
-                  onPageChange('shop');
+                  setSearchQuery('');
+                  if (productId) {
+                    navigate(`/shop?product=${encodeURIComponent(productId)}`);
+                  } else {
+                    navigate('/shop');
+                  }
                 }}
               />
             )}
@@ -141,8 +148,8 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
                 )}
               </button>
               {isCartOpen && (
-                <CartDropdown 
-                  onClose={() => setIsCartOpen(false)} 
+                <CartDropdown
+                  onClose={() => setIsCartOpen(false)}
                   onOpenCheckout={() => setShowCheckout(true)}
                 />
               )}
@@ -166,7 +173,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
                   </button>
                 </div>
               ) : (
-                <button 
+                <button
                   onClick={() => setShowAuthModal(true)}
                   className="flex items-center space-x-1 text-gray-600 hover:text-emerald-600 transition-colors"
                 >
@@ -216,10 +223,14 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             <SearchDropdown
               query={searchQuery}
               onClose={() => {}}
-              onProductSelect={() => {
+              onProductSelect={(productId?: string) => {
                 setIsMobileSearchOpen(false);
                 setSearchQuery('');
-                onPageChange('shop');
+                if (productId) {
+                  navigate(`/shop?product=${encodeURIComponent(productId)}`);
+                } else {
+                  navigate('/shop');
+                }
               }}
             />
           )}
@@ -231,7 +242,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="hidden md:flex items-center justify-center space-x-6 lg:space-x-8 py-3">
             <button
-              onClick={() => onPageChange('home')}
+              onClick={() => navigate('/')}
               className={`text-sm font-medium transition-colors whitespace-nowrap ${
                 currentPage === 'home' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
               }`}
@@ -239,7 +250,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               Home
             </button>
             <button
-              onClick={() => onPageChange('shop')}
+              onClick={() => navigate('/shop')}
               className={`text-sm font-medium transition-colors whitespace-nowrap ${
                 currentPage === 'shop' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
               }`}
@@ -249,14 +260,14 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             {categories.slice(0, 6).map((category) => (
               <button
                 key={category.id}
-                onClick={() => onPageChange('shop')}
+                onClick={() => navigate(`/shop?category=${category.id}`)}
                 className="text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors whitespace-nowrap"
               >
                 {category.name}
               </button>
             ))}
             <button
-              onClick={() => onPageChange('contact')}
+              onClick={() => navigate('/contact')}
               className={`text-sm font-medium transition-colors whitespace-nowrap ${
                 currentPage === 'contact' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
               }`}
@@ -273,7 +284,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
           <div className="px-4 py-3 space-y-1">
             <button
               onClick={() => {
-                onPageChange('home');
+                navigate('/');
                 setIsMenuOpen(false);
               }}
               className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
@@ -282,7 +293,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             </button>
             <button
               onClick={() => {
-                onPageChange('shop');
+                navigate('/shop');
                 setIsMenuOpen(false);
               }}
               className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
@@ -293,7 +304,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               <button
                 key={category.id}
                 onClick={() => {
-                  onPageChange('shop');
+                  navigate(`/shop?category=${category.id}`);
                   setIsMenuOpen(false);
                 }}
                 className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
@@ -303,7 +314,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             ))}
             <button
               onClick={() => {
-                onPageChange('contact');
+                navigate('/contact');
                 setIsMenuOpen(false);
               }}
               className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
