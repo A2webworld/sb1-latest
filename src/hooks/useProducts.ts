@@ -21,18 +21,18 @@ export const useProducts = (): UseProductsResult => {
     setError(null);
     
     try {
-      // FIRST: Load from products.json (always available)
+      // FIRST: Load from products.json (fast fallback so user sees something immediately)
       const fallbackResponse = await fetch('/products.json');
       let fallbackProducts: Product[] = [];
       
       if (fallbackResponse.ok) {
         fallbackProducts = await fallbackResponse.json();
         console.log(`✅ Loaded ${fallbackProducts.length} products from products.json (fallback)`);
-        // Set products immediately so user sees something
+        // Show fallback immediately
         setProducts(fallbackProducts);
       }
       
-      // THEN: Try to load from Supabase (to get latest updates)
+      // THEN: Try Supabase (primary source - has latest data)
       try {
         const response = await fetch('/.netlify/functions/get-products');
         
@@ -41,17 +41,18 @@ export const useProducts = (): UseProductsResult => {
           if (supabaseProducts && supabaseProducts.length > 0) {
             console.log(`✅ Loaded ${supabaseProducts.length} products from Supabase`);
             setProducts(supabaseProducts);
+            return; // Success - use Supabase data (replaces fallback)
           } else {
             console.log('⚠️ Supabase returned 0 products, using fallback');
-            // Keep using fallback products
           }
         } else {
           console.log('⚠️ Supabase function failed, using fallback products');
         }
       } catch (supabaseError) {
         console.log('⚠️ Supabase error, using fallback products:', supabaseError);
-        // Keep using fallback products
       }
+      
+      // If we reach here, Supabase didn't work but fallback was already set
       
     } catch (err) {
       console.error('Error loading products:', err);
