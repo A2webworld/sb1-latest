@@ -38,8 +38,8 @@ export const loadProductsBatch = (products: Product[], page: number, pageSize: n
 export const searchProducts = (products: Product[], query: string): Product[] => {
   const lowercaseQuery = query.toLowerCase();
   return products.filter(product =>
-    product.name.toLowerCase().includes(lowercaseQuery) ||
-    product.description.toLowerCase().includes(lowercaseQuery) ||
-    product.category.toLowerCase().includes(lowercaseQuery)
+    (product.name ?? '').toLowerCase().includes(lowercaseQuery) ||
+    (product.description ?? '').toLowerCase().includes(lowercaseQuery) ||
+    (product.category ?? '').toLowerCase().includes(lowercaseQuery)
   );
 };

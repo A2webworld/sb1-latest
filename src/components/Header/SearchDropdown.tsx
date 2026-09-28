@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search } from 'lucide-react';
-import { products } from '../../data/products';
+import { useProducts } from '../../hooks/useProducts';
 
 interface SearchDropdownProps {
   query: string;
@@ -9,9 +9,11 @@ interface SearchDropdownProps {
 }
 
 export default function SearchDropdown({ query, onClose, onProductSelect }: SearchDropdownProps) {
+  const { products } = useProducts();
+
   const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(query.toLowerCase()) ||
-    product.category.toLowerCase().includes(query.toLowerCase())
+    (product.name ?? '').toLowerCase().includes(query.toLowerCase()) ||
+    (product.category ?? '').toLowerCase().includes(query.toLowerCase())
   ).slice(0, 5);
 
   if (!query || filteredProducts.length === 0) {
