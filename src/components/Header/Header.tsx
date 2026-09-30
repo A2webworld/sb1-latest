@@ -7,14 +7,9 @@ import { categories } from '../../data/categories';
 import CartDropdown from './CartDropdown';
 import SearchDropdown from './SearchDropdown';
 import Checkout from '../../pages/Checkout/Checkout';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-interface HeaderProps {
-  currentPage: string;
-  onPageChange: (page: string) => void;
-}
-
-export default function Header({ currentPage, onPageChange }: HeaderProps) {
+export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -27,6 +22,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
   const { items: wishlistItems } = useWishlist();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,34 +34,44 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
     }
   };
 
-  // Listen for auth modal trigger
   useEffect(() => {
-    const handleOpenAuth = () => {
-      setShowAuthModal(true);
-    };
+    const handleOpenAuth = () => setShowAuthModal(true);
     window.addEventListener('openAuthModal', handleOpenAuth);
     return () => window.removeEventListener('openAuthModal', handleOpenAuth);
   }, []);
 
+  // Marquee content — repeated 4x so the loop is seamless
+  const marqueeItems = [
+    '🚚 Free delivery on orders over £50!',
+    '📞 WhatsApp or call: +44 7440 251589',
+    '📧 info@afonjaafrofoods.co.uk',
+    '🛒 Fresh Nigerian groceries delivered across the UK',
+  ];
+
   return (
-    <header className="bg-white shadow-lg sticky top-0 z-50">
-      {/* Top Bar - Mobile Responsive */}
-      <div className="bg-emerald-600 text-white py-1 sm:py-2">
-        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-          <div className="flex flex-col xs:flex-row justify-between items-center text-[10px] xs:text-xs sm:text-sm gap-0.5 xs:gap-1">
-            <span className="font-medium text-center">🚚 Free delivery on orders over £50!</span>
-            <div className="flex items-center space-x-2 xs:space-x-3 sm:space-x-4">
-              <span>📞 +447440251589</span>
-              <span className="hidden xs:inline">📧 info@afonjaafrofoods.co.uk</span>
+    <header className="glass-card-strong shadow-lg sticky top-0 z-50">
+      {/* ============ MARQUEE ANNOUNCEMENT BAR ============ */}
+      <div className="marquee-bar bg-emerald-600 text-white overflow-hidden">
+        <div className="marquee-track flex whitespace-nowrap py-1 sm:py-2">
+          {/* Duplicate the item list twice for a seamless loop */}
+          {[0, 1].map((dup) => (
+            <div key={dup} className="flex shrink-0" aria-hidden={dup === 1}>
+              {marqueeItems.map((item, i) => (
+                <span
+                  key={`${dup}-${i}`}
+                  className="mx-4 sm:mx-8 text-[10px] xs:text-xs sm:text-sm font-medium"
+                >
+                  {item}
+                </span>
+              ))}
             </div>
-          </div>
+          ))}
         </div>
       </div>
 
       {/* Main Header */}
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16">
-          {/* Logo */}
           <div className="flex-shrink-0 cursor-pointer" onClick={() => navigate('/')}>
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-emerald-600">
               Afonja <span className="text-orange-500">Afro Foods</span>
@@ -111,7 +117,6 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
 
           {/* Right Side Icons */}
           <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-4">
-            {/* Mobile Search Toggle Button */}
             <button
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
               className="md:hidden relative p-1 sm:p-2 text-gray-600 hover:text-emerald-600 transition-colors"
@@ -124,7 +129,6 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               )}
             </button>
 
-            {/* Wishlist */}
             <button className="relative p-1 sm:p-2 text-gray-600 hover:text-emerald-600 transition-colors">
               <Heart className="h-5 w-5 sm:h-6 sm:w-6" />
               {wishlistItems.length > 0 && (
@@ -134,7 +138,6 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               )}
             </button>
 
-            {/* Cart */}
             <div className="relative">
               <button
                 onClick={() => setIsCartOpen(!isCartOpen)}
@@ -155,7 +158,6 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               )}
             </div>
 
-            {/* User Account */}
             <div className="relative">
               {user ? (
                 <div className="flex items-center space-x-1 sm:space-x-2">
@@ -183,7 +185,6 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-1 sm:p-2 text-gray-600 hover:text-emerald-600"
@@ -194,7 +195,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
         </div>
       </div>
 
-      {/* Mobile Search Bar - Persistent (shows when mobile search is toggled) */}
+      {/* Mobile Search Bar */}
       {isMobileSearchOpen && (
         <div className="md:hidden bg-white border-t px-3 py-2 relative">
           <form onSubmit={handleSearch} className="relative">
@@ -218,7 +219,6 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             )}
           </form>
 
-          {/* Live suggestions dropdown */}
           {searchQuery.length > 0 && (
             <SearchDropdown
               query={searchQuery}
@@ -244,7 +244,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             <button
               onClick={() => navigate('/')}
               className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                currentPage === 'home' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
+                location.pathname === '/' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
               }`}
             >
               Home
@@ -252,7 +252,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             <button
               onClick={() => navigate('/shop')}
               className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                currentPage === 'shop' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
+                location.pathname === '/shop' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
               }`}
             >
               Shop All
@@ -269,7 +269,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
             <button
               onClick={() => navigate('/contact')}
               className={`text-sm font-medium transition-colors whitespace-nowrap ${
-                currentPage === 'contact' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
+                location.pathname === '/contact' ? 'text-emerald-600' : 'text-gray-700 hover:text-emerald-600'
               }`}
             >
               Contact
@@ -283,19 +283,13 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
         <div className="md:hidden bg-white border-t max-h-[70vh] overflow-y-auto">
           <div className="px-4 py-3 space-y-1">
             <button
-              onClick={() => {
-                navigate('/');
-                setIsMenuOpen(false);
-              }}
+              onClick={() => { navigate('/'); setIsMenuOpen(false); }}
               className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
             >
               Home
             </button>
             <button
-              onClick={() => {
-                navigate('/shop');
-                setIsMenuOpen(false);
-              }}
+              onClick={() => { navigate('/shop'); setIsMenuOpen(false); }}
               className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
             >
               Shop All
@@ -313,10 +307,7 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
               </button>
             ))}
             <button
-              onClick={() => {
-                navigate('/contact');
-                setIsMenuOpen(false);
-              }}
+              onClick={() => { navigate('/contact'); setIsMenuOpen(false); }}
               className="block w-full text-left py-2 text-gray-700 hover:text-emerald-600"
             >
               Contact
@@ -365,7 +356,6 @@ export default function Header({ currentPage, onPageChange }: HeaderProps) {
         </div>
       )}
 
-      {/* Checkout Modal */}
       <Checkout
         isOpen={showCheckout}
         onClose={() => setShowCheckout(false)}

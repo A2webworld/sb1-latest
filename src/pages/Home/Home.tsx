@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Truck, Shield, Clock, Award } from 'lucide-react';
 import HeroCarousel from '../../components/Hero/HeroCarousel';
 import ProductCard from '../../components/ProductCard/ProductCard';
@@ -6,11 +7,8 @@ import TestimonialsCarousel from '../../components/TestimonialsCarousel/Testimon
 import { useProducts } from '../../hooks/useProducts';
 import { categories } from '../../data/categories';
 
-interface HomeProps {
-  onPageChange: (page: string) => void;
-}
-
-export default function Home({ onPageChange }: HomeProps) {
+export default function Home() {
+  const navigate = useNavigate();
   const { products } = useProducts();
   const bestSellers = products.filter(p => p.rating >= 4.7).slice(0, 4);
   const newArrivals = products.filter(p => p.isNew).slice(0, 4);
@@ -20,11 +18,11 @@ export default function Home({ onPageChange }: HomeProps) {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
-        <HeroCarousel onPageChange={onPageChange} />
+        <HeroCarousel />
       </section>
 
-      {/* Features Section - Mobile Responsive */}
-      <section className="bg-white py-8 sm:py-16">
+      {/* Features Section */}
+      <section className="bg-white/60 py-8 sm:py-16">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
             <div className="text-center">
@@ -59,20 +57,20 @@ export default function Home({ onPageChange }: HomeProps) {
         </div>
       </section>
 
-      {/* Categories Section - Mobile Responsive */}
-      <section className="bg-gray-50 py-8 sm:py-16">
+      {/* Categories Section */}
+      <section className="bg-white/40 py-8 sm:py-16">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="text-center mb-6 sm:mb-12">
             <h2 className="text-xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">Shop by Category</h2>
             <p className="text-sm sm:text-lg text-gray-600">Find everything you need in our organized categories</p>
           </div>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
             {categories.slice(0, 10).map((category) => (
               <button
                 key={category.id}
-                onClick={() => onPageChange('shop')}
-                className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 p-3 sm:p-4"
+                onClick={() => navigate(`/shop?category=${category.id}`)}
+                className="group glass-card rounded-lg hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 p-3 sm:p-4"
               >
                 <div className="text-center">
                   <div className="text-2xl sm:text-4xl mb-1 sm:mb-3">{category.icon}</div>
@@ -87,7 +85,7 @@ export default function Home({ onPageChange }: HomeProps) {
         </div>
       </section>
 
-      {/* Best Sellers Section - Mobile Responsive */}
+      {/* Best Sellers */}
       <section className="py-8 sm:py-16">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between mb-4 sm:mb-8">
@@ -96,14 +94,14 @@ export default function Home({ onPageChange }: HomeProps) {
               <p className="text-xs sm:text-base text-gray-600">Most popular products this week</p>
             </div>
             <button
-              onClick={() => onPageChange('shop')}
+              onClick={() => navigate('/shop')}
               className="flex items-center space-x-1 sm:space-x-2 text-emerald-600 hover:text-emerald-700 font-medium text-sm sm:text-base"
             >
               <span>View All</span>
               <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </button>
           </div>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {bestSellers.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -112,8 +110,8 @@ export default function Home({ onPageChange }: HomeProps) {
         </div>
       </section>
 
-      {/* New Arrivals Section - Mobile Responsive */}
-      <section className="bg-gray-50 py-8 sm:py-16">
+      {/* New Arrivals */}
+      <section className="bg-white/40 py-8 sm:py-16">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between mb-4 sm:mb-8">
             <div>
@@ -121,14 +119,14 @@ export default function Home({ onPageChange }: HomeProps) {
               <p className="text-xs sm:text-base text-gray-600">Fresh products just added to our store</p>
             </div>
             <button
-              onClick={() => onPageChange('shop')}
+              onClick={() => navigate('/shop')}
               className="flex items-center space-x-1 sm:space-x-2 text-emerald-600 hover:text-emerald-700 font-medium text-sm sm:text-base"
             >
               <span>View All</span>
               <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </button>
           </div>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {newArrivals.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -137,7 +135,7 @@ export default function Home({ onPageChange }: HomeProps) {
         </div>
       </section>
 
-      {/* Discount Offers Section - Mobile Responsive */}
+      {/* Special Offers */}
       <section className="py-8 sm:py-16">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex items-center justify-between mb-4 sm:mb-8">
@@ -146,14 +144,14 @@ export default function Home({ onPageChange }: HomeProps) {
               <p className="text-xs sm:text-base text-gray-600">Limited time deals you don't want to miss</p>
             </div>
             <button
-              onClick={() => onPageChange('shop')}
+              onClick={() => navigate('/shop')}
               className="flex items-center space-x-1 sm:space-x-2 text-emerald-600 hover:text-emerald-700 font-medium text-sm sm:text-base"
             >
               <span>View All</span>
               <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </button>
           </div>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {discountOffers.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -162,7 +160,7 @@ export default function Home({ onPageChange }: HomeProps) {
         </div>
       </section>
 
-      {/* Newsletter Section - Mobile Responsive */}
+      {/* Newsletter */}
       <section className="bg-emerald-600 py-8 sm:py-16">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 text-center">
           <h2 className="text-xl sm:text-3xl font-bold text-white mb-2 sm:mb-4">
@@ -184,7 +182,6 @@ export default function Home({ onPageChange }: HomeProps) {
         </div>
       </section>
 
-      {/* Testimonials Section */}
       <TestimonialsCarousel />
     </div>
   );

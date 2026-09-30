@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import Home from './pages/Home/Home';
@@ -12,63 +13,37 @@ import ReturnPolicy from './pages/Static/ReturnPolicy';
 import { CartProvider } from './contexts/CartContext';
 import { WishlistProvider } from './contexts/WishlistContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProductModalProvider } from './contexts/ProductModalContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('home');
-
-  // Check URL path when app loads
-  useEffect(() => {
-    const path = window.location.pathname.replace('/', '');
-    const validPages = ['shop', 'contact', 'about', 'delivery', 'privacy', 'terms', 'return'];
-    if (path && validPages.includes(path)) {
-      setCurrentPage(path);
-    } else {
-      setCurrentPage('home');
-    }
-  }, []);
-
-  const handlePageChange = (page: string) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    window.history.pushState({}, '', `/${page}`);
-  };
-
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'home':
-        return <Home onPageChange={handlePageChange} />;
-      case 'shop':
-        return <Shop />;
-      case 'contact':
-        return <Contact />;
-      case 'about':
-        return <AboutUs />;
-      case 'delivery':
-        return <DeliveryInfo />;
-      case 'privacy':
-        return <PrivacyPolicy />;
-      case 'terms':
-        return <TermsConditions />;
-      case 'return':
-        return <ReturnPolicy />;
-      default:
-        return <Home onPageChange={handlePageChange} />;
-    }
-  };
-
   return (
     <ErrorBoundary>
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <div className="min-h-screen bg-gray-50">
-              <Header currentPage={currentPage} onPageChange={handlePageChange} />
-              <main>
-                {renderPage()}
+              <ProductModalProvider>
+            <div className="min-h-screen relative">
+              <div className="app-bg-animated" aria-hidden="true" />
+              <ScrollToTop />
+              <Header />
+              <main className="relative z-10">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/shop" element={<Shop />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/about" element={<AboutUs />} />
+                  <Route path="/delivery" element={<DeliveryInfo />} />
+                  <Route path="/privacy" element={<PrivacyPolicy />} />
+                  <Route path="/terms" element={<TermsConditions />} />
+                  <Route path="/return" element={<ReturnPolicy />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
               </main>
-              <Footer onPageChange={handlePageChange} />
+              <Footer />
             </div>
+          </ProductModalProvider>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>

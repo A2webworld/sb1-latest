@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
+import PageNav from '../../components/PageNav';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -26,7 +27,8 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
+      <PageNav title="Contact" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
@@ -107,7 +109,7 @@ export default function Contact() {
 
           {/* Contact Form */}
           <div>
-            <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="glass-card-strong rounded-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h2>
               
               <form onSubmit={handleSubmit} className="space-y-6">

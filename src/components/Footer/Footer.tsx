@@ -1,17 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from 'lucide-react';
 import { categories } from '../../data/categories';
 
-interface FooterProps {
-  onPageChange?: (page: string) => void;
-}
+export default function Footer() {
+  const navigate = useNavigate();
 
-export default function Footer({ onPageChange }: FooterProps) {
   const handleNavigation = (page: string) => {
-    if (onPageChange) {
-      onPageChange(page);
+    if (page === 'home') {
+      navigate('/');
     } else {
-      window.location.href = `/${page}`;
+      navigate(`/${page}`);
     }
   };
 
@@ -40,40 +39,40 @@ export default function Footer({ onPageChange }: FooterProps) {
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <button 
-                  onClick={() => handleNavigation('about')} 
+                <button
+                  onClick={() => handleNavigation('about')}
                   className="text-gray-300 hover:text-emerald-400 transition-colors"
                 >
                   About Us
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => handleNavigation('delivery')} 
+                <button
+                  onClick={() => handleNavigation('delivery')}
                   className="text-gray-300 hover:text-emerald-400 transition-colors"
                 >
                   Delivery Info
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => handleNavigation('privacy')} 
+                <button
+                  onClick={() => handleNavigation('privacy')}
                   className="text-gray-300 hover:text-emerald-400 transition-colors"
                 >
                   Privacy Policy
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => handleNavigation('terms')} 
+                <button
+                  onClick={() => handleNavigation('terms')}
                   className="text-gray-300 hover:text-emerald-400 transition-colors"
                 >
                   Terms & Conditions
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => handleNavigation('return')} 
+                <button
+                  onClick={() => handleNavigation('return')}
                   className="text-gray-300 hover:text-emerald-400 transition-colors"
                 >
                   Return Policy
@@ -82,14 +81,14 @@ export default function Footer({ onPageChange }: FooterProps) {
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Categories — now navigate with the category filter */}
           <div>
             <h4 className="text-lg font-semibold mb-4">Categories</h4>
             <ul className="space-y-2">
               {categories.slice(0, 6).map((category) => (
                 <li key={category.id}>
-                  <button 
-                    onClick={() => handleNavigation('shop')} 
+                  <button
+                    onClick={() => navigate(`/shop?category=${category.id}`)}
                     className="text-gray-300 hover:text-emerald-400 transition-colors"
                   >
                     {category.name}
@@ -117,7 +116,6 @@ export default function Footer({ onPageChange }: FooterProps) {
               </div>
             </div>
 
-            {/* Newsletter */}
             <div className="mt-6">
               <h5 className="text-sm font-semibold mb-2">Subscribe to Newsletter</h5>
               <div className="flex">
