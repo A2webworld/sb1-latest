@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X, Plus, Minus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 
@@ -10,7 +11,7 @@ interface CartDropdownProps {
 export default function CartDropdown({ onClose, onOpenCheckout }: CartDropdownProps) {
   const { items, total, itemCount, updateQuantity, removeItem } = useCart();
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop — mobile only */}
       <div
@@ -20,7 +21,7 @@ export default function CartDropdown({ onClose, onOpenCheckout }: CartDropdownPr
       />
 
       {/* Panel */}
-      <div className="fixed inset-x-0 bottom-0 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96 sm:max-w-[24rem] bg-white rounded-t-2xl sm:rounded-xl shadow-2xl border border-gray-100 z-50 flex flex-col max-h-[85vh] sm:max-h-[600px]">
+      <div className="fixed inset-x-0 bottom-0 sm:inset-auto sm:right-6 sm:top-32 sm:bottom-auto sm:w-96 sm:max-w-[24rem] bg-white rounded-t-2xl sm:rounded-xl shadow-2xl border border-gray-100 z-50 flex flex-col max-h-[calc(100dvh-160px)] sm:max-h-[600px] pb-[env(safe-area-inset-bottom)]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b rounded-t-2xl sm:rounded-t-xl flex-shrink-0">
           <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -138,6 +139,7 @@ export default function CartDropdown({ onClose, onOpenCheckout }: CartDropdownPr
           </>
         )}
       </div>
-    </>
+    </>,
+    document.body
   );
 }

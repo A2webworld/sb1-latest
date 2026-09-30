@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -165,9 +166,9 @@ Thank you for ordering from Afonja Afro Foods! 🛒
     }
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 overflow-y-auto p-4 pt-20 sm:pt-4">
+      <div className="bg-white rounded-lg max-w-md w-full max-h-[calc(100dvh-100px)] sm:max-h-[90vh] overflow-y-auto my-4 sm:my-0">
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <ShoppingBag className="h-6 w-6 text-emerald-600" />
@@ -327,7 +328,8 @@ Thank you for ordering from Afonja Afro Foods! 🛒
           </p>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
