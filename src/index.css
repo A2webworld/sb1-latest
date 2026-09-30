@@ -17,9 +17,7 @@ html, body {
 }
 
 /* Prevent any child from forcing horizontal scroll */
-* {
-  max-width: 100%;
-}
+/* removed global * max-width: 100% — was collapsing the cart dropdown */
 
 img, video, canvas, svg {
   max-width: 100%;
