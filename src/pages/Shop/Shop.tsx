@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Filter, Grid, List, ChevronDown } from 'lucide-react';
 import ProductCard from '../../components/ProductCard/ProductCard';
+import { buildFamilies } from '../../utils/productFamilies';
 import { useProducts } from '../../hooks/useProducts';
 import { categories } from '../../data/categories';
 import PageNav from '../../components/PageNav';
@@ -64,20 +65,22 @@ export default function Shop() {
   }, [targetProductId, loading, products, productsPerPage]);
 
   const filteredAndSortedProducts = useMemo(() => {
-    let filtered = products;
+    // Collapse product variants into one family representative.
+    const families = buildFamilies(products);
 
-    // Filter by category
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
+    let reps = Array.from(families.values())
+      .map((family) => {
+        const matching = family.variants.filter((v) => {
+          if (selectedCategory !== 'all' && v.category !== selectedCategory) return false;
+          if (v.price < priceRange[0] || v.price > priceRange[1]) return false;
+          return true;
+        });
+        if (matching.length === 0) return null;
+        return matching.reduce((cheapest, v) => (v.price < cheapest.price ? v : cheapest), matching[0]);
+      })
+      .filter((p) => p !== null);
 
-    // Filter by price range
-    filtered = filtered.filter(product =>
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Sort products
-    filtered.sort((a, b) => {
+    reps.sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
           return a.price - b.price;
@@ -91,7 +94,7 @@ export default function Shop() {
       }
     });
 
-    return filtered;
+    return reps;
   }, [products, selectedCategory, sortBy, priceRange]);
 
   // Pagination

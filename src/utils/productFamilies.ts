@@ -97,3 +97,24 @@ export function getSiblings(product: Product, allProducts: Product[]): Product[]
     .filter(p => familyKey(p.name) === key)
     .sort((a, b) => parseWeight(a.name) - parseWeight(b.name));
 }
+
+/**
+ * Collapse the full product list into one representative per family.
+ * The representative is the cheapest sibling (so cards show "From £X").
+ * Result: roughly 130 cards instead of 153, no duplicates by family.
+ */
+export function collapseToFamilies(products: Product[]): Product[] {
+  const families = buildFamilies(products);
+  const reps: Product[] = [];
+
+  for (const family of families.values()) {
+    // Cheapest sibling becomes the representative
+    const rep = family.variants.reduce(
+      (cheapest, v) => (v.price < cheapest.price ? v : cheapest),
+      family.variants[0]
+    );
+    reps.push(rep);
+  }
+
+  return reps;
+}

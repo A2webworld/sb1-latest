@@ -158,6 +158,7 @@ export default function Header() {
               )}
             </div>
 
+            {/* Auth UI temporarily hidden — re-enable by removing this comment block
             <div className="relative">
               {user ? (
                 <div className="flex items-center space-x-1 sm:space-x-2">
@@ -184,6 +185,9 @@ export default function Header() {
                 </button>
               )}
             </div>
+            */}
+            {/* Placeholder to keep layout stable — remove when auth is re-enabled */}
+            <div className="relative w-6 sm:w-8" aria-hidden="true" />
 
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -317,7 +321,8 @@ export default function Header() {
       )}
 
       {/* Auth Modal */}
-      {showAuthModal && (
+      {/* Auth modal — temporarily disabled
+{showAuthModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 relative max-h-[90vh] overflow-y-auto">
             <button
@@ -355,6 +360,7 @@ export default function Header() {
           </div>
         </div>
       )}
+      */}
 
       <Checkout
         isOpen={showCheckout}

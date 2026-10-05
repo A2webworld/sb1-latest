@@ -4,6 +4,8 @@ import { Product } from '../../types';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useProductModal } from '../../contexts/ProductModalContext';
+import { useProducts } from '../../hooks/useProducts';
+import { getSiblings } from '../../utils/productFamilies';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +15,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { openProduct } = useProductModal();
+  const { products: allProducts } = useProducts();
+  const siblings = getSiblings(product, allProducts);
+  const hasSiblings = siblings.length > 1;
+  const lowestPrice = hasSiblings
+    ? Math.min(...siblings.map((s) => s.price))
+    : product.price;
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -110,15 +118,23 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center space-x-2">
+            {hasSiblings && (
+              <span className="text-xs font-medium text-gray-500">From</span>
+            )}
             <span className="text-xl font-bold text-emerald-600">
-              £{product.price.toFixed(2)}
+              £{lowestPrice.toFixed(2)}
             </span>
-            {product.originalPrice && (
+            {product.originalPrice && product.originalPrice > product.price && (
               <span className="text-sm text-gray-500 line-through">
                 £{product.originalPrice.toFixed(2)}
               </span>
             )}
           </div>
+          {hasSiblings && (
+            <span className="text-[10px] sm:text-xs bg-emerald-50 text-emerald-700 font-medium px-2 py-0.5 rounded-full">
+              {siblings.length} sizes
+            </span>
+          )}
         </div>
 
         {product.originalPrice && (
