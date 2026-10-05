@@ -3,6 +3,9 @@ import { X, Star, ShoppingCart, Heart, Minus, Plus, Truck, Shield, RefreshCw } f
 import { Product } from '../../types';
 import { useCart } from '../../contexts/CartContext';
 import { useWishlist } from '../../contexts/WishlistContext';
+import { useProductModal } from '../../contexts/ProductModalContext';
+import { useProducts } from '../../hooks/useProducts';
+import { getSiblings, sizeToken } from '../../utils/productFamilies';
 
 interface ProductModalProps {
   product: Product | null;
@@ -12,11 +15,15 @@ interface ProductModalProps {
 export default function ProductModal({ product, onClose }: ProductModalProps) {
   const { addItem } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { openProduct } = useProductModal();
+  const { products: allProducts } = useProducts();
   const [quantity, setQuantity] = useState(1);
 
   if (!product) return null;
 
   const inWishlist = isInWishlist(product.id);
+  const siblings = getSiblings(product, allProducts);
+  const hasSiblings = siblings.length > 1;
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -73,9 +80,49 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
 
           {/* Details */}
           <div className="p-6 sm:p-8">
+            {product.brand && (
+              <p className="text-xs font-semibold tracking-wider text-emerald-700 uppercase mb-1">
+                {product.brand}
+              </p>
+            )}
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
               {product.name}
             </h2>
+
+            {/* Size chips */}
+            {hasSiblings && (
+              <div className="mb-4">
+                <p className="text-xs font-medium text-gray-500 mb-2">Available sizes</p>
+                <div className="flex flex-wrap gap-2">
+                  {siblings.map((sib) => {
+                    const isActive = sib.id === product.id;
+                    const label = sizeToken(sib.name) || sib.name;
+                    return (
+                      <button
+                        key={sib.id}
+                        onClick={() => {
+                          if (!isActive) {
+                            setQuantity(1);
+                            openProduct(sib);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                          isActive
+                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:border-emerald-500 hover:text-emerald-600'
+                        }`}
+                        aria-label={`Switch to ${label}`}
+                      >
+                        {label}
+                        <span className="ml-1.5 text-xs opacity-70">
+                          £{sib.price.toFixed(2)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center mb-4">
               <div className="flex items-center">
@@ -91,7 +138,7 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
                 ))}
               </div>
               <span className="text-sm text-gray-500 ml-2">
-                {product.rating.toFixed(1)} ({product.reviewCount ?? 0} reviews)
+                {product.rating.toFixed(1)} ({product.reviews ?? 0} reviews)
               </span>
             </div>
 
@@ -99,14 +146,14 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
               <span className="text-3xl font-bold text-emerald-600">
                 £{product.price.toFixed(2)}
               </span>
-              {product.originalPrice && (
+              {product.originalPrice && product.originalPrice > product.price && (
                 <span className="text-lg text-gray-400 line-through">
                   £{product.originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
 
-            {product.originalPrice && (
+            {product.originalPrice && product.originalPrice > product.price && (
               <p className="text-sm font-medium text-orange-600 mb-4">
                 You save £{(product.originalPrice - product.price).toFixed(2)}
               </p>
@@ -116,10 +163,14 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
               {product.description || 'A quality product from Afonja Afro Foods.'}
             </p>
 
-            {/* Category + stock */}
             <div className="flex items-center gap-4 text-sm text-gray-500 mb-6">
               {product.category && (
-                <span>Category: <strong className="text-gray-700 capitalize">{product.category.replace(/-/g, ' ')}</strong></span>
+                <span>
+                  Category:{' '}
+                  <strong className="text-gray-700 capitalize">
+                    {product.category.replace(/-/g, ' ')}
+                  </strong>
+                </span>
               )}
               {product.inStock ? (
                 <span className="text-emerald-600 font-medium">● In stock</span>
@@ -133,7 +184,7 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
               <span className="text-sm font-medium text-gray-700">Quantity:</span>
               <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                 <button
-                  onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="p-2 hover:bg-gray-100"
                   aria-label="Decrease quantity"
                 >
@@ -141,7 +192,7 @@ export default function ProductModal({ product, onClose }: ProductModalProps) {
                 </button>
                 <span className="px-4 font-medium min-w-[3rem] text-center">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(q => q + 1)}
+                  onClick={() => setQuantity((q) => q + 1)}
                   className="p-2 hover:bg-gray-100"
                   aria-label="Increase quantity"
                 >
