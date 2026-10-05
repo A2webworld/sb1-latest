@@ -11,27 +11,23 @@ interface UseProductsResult {
   reloadProducts: () => Promise<void>;
 }
 
-// ============= GLOBAL CACHE (shared across all hook instances) =============
 let cachedProducts: Product[] | null = null;
 let loadingPromise: Promise<Product[]> | null = null;
 
 const fetchProducts = async (): Promise<Product[]> => {
-  // If already cached, return immediately
   if (cachedProducts && cachedProducts.length > 0) {
-    console.log(`📦 Using cached ${cachedProducts.length} products`);
     return cachedProducts;
   }
-
-  // If already loading, wait for the same promise (no duplicate fetches)
   if (loadingPromise) {
     return loadingPromise;
   }
 
   loadingPromise = (async () => {
-    // 1. Load fallback first (fast) - but only if we don't have cache
     let fallbackProducts: Product[] = [];
+
+    // 1. Fallback — /public/products.json (48 items)
     try {
-      const fallbackResponse = await fetch('/products.json');
+      const fallbackResponse = await fetch('/products.json?t=' + Date.now());
       if (fallbackResponse.ok) {
         fallbackProducts = await fallbackResponse.json();
         console.log(`✅ Loaded ${fallbackProducts.length} products from products.json (fallback)`);
@@ -41,19 +37,20 @@ const fetchProducts = async (): Promise<Product[]> => {
       console.warn('Fallback load failed:', err);
     }
 
-    // 2. Load Supabase (authoritative) - this OVERWRITES fallback
+    // 2. Supabase via Netlify function — authoritative
     try {
-      const response = await fetch('/.netlify/functions/get-products');
+      const response = await fetch('/.netlify/functions/get-products?t=' + Date.now());
       if (response.ok) {
         const supabaseProducts = await response.json();
-        if (supabaseProducts && supabaseProducts.length > 0) {
+        if (Array.isArray(supabaseProducts) && supabaseProducts.length > 0) {
           console.log(`✅ Loaded ${supabaseProducts.length} products from Supabase (authoritative)`);
           cachedProducts = supabaseProducts;
         } else {
-          console.log('⚠️ Supabase returned 0 products, keeping fallback');
+          console.log('⚠ Supabase returned 0 products, keeping fallback');
         }
       } else {
-        console.log('⚠️ Supabase function failed, keeping fallback');
+        const errText = await response.text().catch(() => '');
+        console.log(`⚠ Supabase function returned ${response.status}. Body: ${errText.slice(0, 200)}`);
       }
     } catch (err) {
       console.warn('Supabase load failed, keeping fallback:', err);
@@ -63,7 +60,7 @@ const fetchProducts = async (): Promise<Product[]> => {
   })();
 
   const result = await loadingPromise;
-  loadingPromise = null; // allow reload later
+  loadingPromise = null;
   return result;
 };
 
@@ -73,12 +70,10 @@ export const useProducts = (): UseProductsResult => {
   const [error, setError] = useState<string | null>(null);
 
   const loadProducts = async () => {
-    // Force refresh - clear cache
     cachedProducts = null;
     loadingPromise = null;
     setLoading(true);
     setError(null);
-    
     try {
       const result = await fetchProducts();
       setProducts(result);
@@ -92,15 +87,12 @@ export const useProducts = (): UseProductsResult => {
 
   useEffect(() => {
     let mounted = true;
-
     const load = async () => {
-      // If cache is already populated, use it immediately
       if (cachedProducts && cachedProducts.length > 0) {
         setProducts(cachedProducts);
         setLoading(false);
         return;
       }
-
       try {
         const result = await fetchProducts();
         if (mounted) {
@@ -114,7 +106,6 @@ export const useProducts = (): UseProductsResult => {
         }
       }
     };
-
     load();
     return () => { mounted = false; };
   }, []);

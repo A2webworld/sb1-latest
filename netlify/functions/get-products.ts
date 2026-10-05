@@ -10,7 +10,7 @@ export const handler: Handler = async (event) => {
         const { data: products, error } = await supabase
             .from('products')
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('name', { ascending: true });
 
         if (error) {
             console.error('Supabase error:', error);
@@ -20,10 +20,10 @@ export const handler: Handler = async (event) => {
             };
         }
 
-        // Convert database fields back to frontend format
         const formattedProducts = (products || []).map(p => ({
             id: p.id,
             name: p.name,
+            brand: p.brand || '',
             price: p.price,
             originalPrice: p.original_price,
             image: p.image,
@@ -38,13 +38,14 @@ export const handler: Handler = async (event) => {
 
         return {
             statusCode: 200,
+            headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
             body: JSON.stringify(formattedProducts)
         };
     } catch (error) {
         console.error('Error loading products:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 error: 'Failed to load products',
                 details: error instanceof Error ? error.message : 'Unknown error'
             })
