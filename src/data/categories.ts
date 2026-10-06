@@ -2,6 +2,13 @@ import { Category } from '../types';
 
 export const categories: Category[] = [
   {
+    id: 'canned-goods',
+    name: 'Canned Goods',
+    icon: '🥫',
+    image: 'https://images.pexels.com/photos/1435735/pexels-photo-1435735.jpeg?auto=compress&cs=tinysrgb&w=300',
+    productCount: 0
+  },
+  {
     id: 'milk-powder',
     name: 'Milk Powder',
     icon: '🥛',

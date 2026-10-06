@@ -102,6 +102,10 @@ export default function Shop() {
   const startIndex = (currentPage - 1) * productsPerPage;
   const paginatedProducts = filteredAndSortedProducts.slice(startIndex, startIndex + productsPerPage);
 
+  const countByCategory = (categoryId: string) =>
+    products.filter(p => p.category === categoryId).length;
+
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -169,7 +173,7 @@ export default function Shop() {
                       />
                       <span className="ml-2 text-sm">All Products</span>
                     </label>
-                    {categories.map((category) => (
+                    {categories.filter(c => countByCategory(c.id) > 0).map((category) => (
                       <label key={category.id} className="flex items-center">
                         <input
                           type="radio"
@@ -179,7 +183,7 @@ export default function Shop() {
                           onChange={(e) => setSelectedCategory(e.target.value)}
                           className="text-emerald-600 focus:ring-emerald-500"
                         />
-                        <span className="ml-2 text-sm">{category.name}</span>
+                        <span className="ml-2 text-sm">{category.name} <span className="text-gray-400">({countByCategory(category.id)})</span></span>
                       </label>
                     ))}
                   </div>
@@ -225,7 +229,7 @@ export default function Shop() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center space-x-4">
                   <span className="text-sm text-gray-600">
-                    Showing {filteredAndSortedProducts.length === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + productsPerPage, filteredAndSortedProducts.length)} of {filteredAndSortedProducts.length} products
+                    Showing {filteredAndSortedProducts.length === 0 ? 0 : startIndex + 1}-{Math.min(startIndex + productsPerPage, filteredAndSortedProducts.length)} of {filteredAndSortedProducts.length} groups ({products.length} products total)
                   </span>
                 </div>
 

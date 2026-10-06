@@ -13,6 +13,8 @@ export default function Home() {
   const bestSellers = products.filter(p => p.rating >= 4.7).slice(0, 4);
   const newArrivals = products.filter(p => p.isNew).slice(0, 4);
   const discountOffers = products.filter(p => p.isOnSale).slice(0, 4);
+  const countByCategory = (categoryId: string) =>
+    products.filter(p => p.category === categoryId).length;
 
   return (
     <div className="min-h-screen">
@@ -66,7 +68,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-            {categories.slice(0, 10).map((category) => (
+            {categories.filter(c => countByCategory(c.id) > 0).slice(0, 10).map((category) => (
               <button
                 key={category.id}
                 onClick={() => navigate(`/shop?category=${category.id}`)}
@@ -77,7 +79,7 @@ export default function Home() {
                   <h3 className="text-xs sm:text-base font-semibold text-gray-900 mb-0.5 sm:mb-2 group-hover:text-emerald-600 transition-colors">
                     {category.name}
                   </h3>
-                  <p className="text-[10px] sm:text-sm text-gray-500">{category.productCount} items</p>
+                  <p className="text-[10px] sm:text-sm text-gray-500">{countByCategory(category.id)} items</p>
                 </div>
               </button>
             ))}
