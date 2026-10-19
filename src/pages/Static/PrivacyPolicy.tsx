@@ -52,7 +52,7 @@ export default function PrivacyPolicy() {
 
             <div className="glass-card rounded-lg p-6">
               <p className="text-gray-700">📧 <strong>Contact us:</strong> info@afonjaafrofoods.co.uk</p>
-              <p className="text-gray-700 mt-2">📍 <strong>Address:</strong> 3 Southend Rd, Grays RM17 5NH, United Kingdom</p>
+              <p className="text-gray-700 mt-2">📍 <strong>Address:</strong> 4 Clarence Road, Grays RM17 6QA, United Kingdom</p>
             </div>
           </div>
         </div>

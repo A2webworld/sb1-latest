@@ -68,7 +68,7 @@ export default function AboutUs() {
           </div>
 
           <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-6 text-center">
-            <p className="text-gray-700">📍 <strong>Visit Us:</strong> 3 Southend Rd, Grays RM17 5NH, United Kingdom</p>
+            <p className="text-gray-700">📍 <strong>Visit Us:</strong> 4 Clarence Road, Grays RM17 6QA, United Kingdom</p>
             <p className="text-gray-700 mt-2">📞 <strong>Call Us:</strong> +44 7440251589</p>
             <p className="text-gray-700 mt-2">📧 <strong>Email:</strong> info@afonjaafrofoods.co.uk</p>
           </div>

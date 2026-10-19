@@ -66,7 +66,7 @@ export default function ReturnPolicy() {
               <h3 className="font-semibold text-emerald-800 mb-2">Need Help?</h3>
               <p className="text-gray-700">📧 <strong>Email:</strong> info@afonjaafrofoods.co.uk</p>
               <p className="text-gray-700 mt-1">📞 <strong>Phone:</strong> +44 7440251589</p>
-              <p className="text-gray-700 mt-1">📍 <strong>Address:</strong> 3 Southend Rd, Grays RM17 5NH, United Kingdom</p>
+              <p className="text-gray-700 mt-1">📍 <strong>Address:</strong> 4 Clarence Road, Grays RM17 6QA, United Kingdom</p>
             </div>
           </div>
         </div>
